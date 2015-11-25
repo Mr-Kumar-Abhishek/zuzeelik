@@ -19,11 +19,14 @@
 	}
 	/* fake add_history function */
 	void add_history(char* not_used) {}
-/* or include thesse editline header */
+/* or include these editline header */
 #else 
 
 	#include <editline/readline.h>
-	#include <editline/history.h>
+	/*if not not OS X then include header file below*/
+	#ifndef __APPLE__
+		#include <editline/history.h>
+	#endif
 
 #endif
 
