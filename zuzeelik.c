@@ -1,5 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include "mpc/mpc.h"
 
 /* if compiling in windows, compiling with this functions */
 
@@ -31,11 +30,28 @@
 #endif
 
 int main(int argc, char** argv) {
-	puts("zuzeelik [version: v0.0.0-0.0.3]");
+
+	/* creating some parsers */
+	mpc_parser_t* Number = mpc_new("number");
+	mpc_parser_t* Operator = mpc_new("operator");
+	mpc_parser_t* Expression = mpc_new("expression");
+	mpc_parser_t* Zuzeelik = mpc_new("zuzeelik");
+
+	/* defining them with following language */
+	mpca_lang(MPCA_LANG_DEFAULT,
+		" 															   \
+			number 	   : /-?[0-9]+/ ; 		  						   \
+			operator   : '+' | '-' | '*' | '/' ;					   \
+			expression : <number> | '(' <operator> <expression>+ ')' ; \
+			zuzeelik   : /^/ <operator> <expression>+ /$/ ; 		   \
+		",
+	Number, Operator, Expression, Zuzeelik);
+
+
+	puts("zuzeelik [ version: v0.0.0-0.1.0 ] \n");
 	puts("Press Ctrl+C to Exit \n");
 	
 	/* Starting REPL */
-	
 	while(1){
 		/* output from the prompt*/
 		char* input = readline("zuzeelik> ");
@@ -43,12 +59,25 @@ int main(int argc, char** argv) {
 		/*Add input to history */
 		add_history(input);
 		
-		/* Echo the input back to the user */
-		printf("Got Input: %s \n", input);
+		/* An attepmt to parse the input */
+		mpc_result_t result;
+		if(mpc_parse("<stdin>", input, Zuzeelik, &result)) {
+
+			/* On success print the AST */
+			mpc_ast_print(result.output);
+			mpc_ast_delete(result.output);
+		}else {
+
+			/*Or else print the error */
+			mpc_err_print(result.error);
+			mpc_err_delete(result.error);
+		}
 
 		/*free retrieved input */
 		free(input);
 	}
 
+	/* undefining and deleting parsers */
+	mpc_cleanup(4, Number, Operator, Expression, Zuzeelik);
 	return 0;
 }
