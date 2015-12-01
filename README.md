@@ -4,8 +4,22 @@ A programming language similar to lisp.
 * compilation: `cc -std=c99 -Wall zuzeelik.c mpc/mpc.c -ledit -lm -o zuzeelik`
 * cloning: `git clone --recursive https://github.com/Mr-Kumar-Abhishek/zuzeelik.git`
 
-#####Examples
-* input: `zuzeelik> + 4 ( / 4 2)`
+####Syntax and operators:
+
+Zuzeelik follows [polish notation](http://en.wikipedia.org/wiki/Polish_notation) while reading inputs. Those who are not familiar with it , try prefixing operators, such as:
+
+* `1 + 4 + 9` becomes `+ 1 4 9`
+* `8 - ( 5 * 6) ` becomes  `- 8 (* 5 6)`
+* `(10 / 5) * (10 /2)` becomes `* (/ 10 5) ( / 10 2)` 
+
+Currently it supports `+` , `-`, `/` , `*` and `%` symbolic operators.
+
+#####Examples:
+* input: 
+ ```
+ zuzeelik> + 4 ( / 4 2)
+ ```
+ 
 * output:
 ```
 > 
