@@ -41,14 +41,14 @@ int main(int argc, char** argv) {
 	mpca_lang(MPCA_LANG_DEFAULT,
 		" 															   \
 			number 	   : /-?[0-9]+/ ; 		  						   \
-			operator   : '+' | '-' | '*' | '/' ;					   \
+			operator   : '+' | '-' | '*' | '/' | '%' ;				   \
 			expression : <number> | '(' <operator> <expression>+ ')' ; \
 			zuzeelik   : /^/ <operator> <expression>+ /$/ ; 		   \
 		",
 	Number, Operator, Expression, Zuzeelik);
 
 
-	puts("zuzeelik [ version: v0.0.0-0.1.0 ] \n");
+	puts("zuzeelik [ version: v0.0.0-0.1.1 ] \n");
 	puts("Press Ctrl+C to Exit \n");
 	
 	/* Starting REPL */
