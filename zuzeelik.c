@@ -39,16 +39,16 @@ int main(int argc, char** argv) {
 
 	/* defining them with following language */
 	mpca_lang(MPCA_LANG_DEFAULT,
-		" 															   \
-			number 	   : /-?[0-9]+/ ; 		  						   \
-			operator   : '+' | '-' | '*' | '/' | '%' ;				   \
-			expression : <number> | '(' <operator> <expression>+ ')' ; \
-			zuzeelik   : /^/ <operator> <expression>+ /$/ ; 		   \
+		" 															   							\
+			number 	   : /-?[0-9]+/ ; 		  						   							\
+			operator   : '+' | '-' | '*' | '/' | '%' | \"add\" | \"sub\" | \"mul\" | \"div\" ;	\
+			expression : <number> | '(' <operator> <expression>+ ')' ; 							\
+			zuzeelik   : /^/ <operator> <expression>+ /$/ ; 		   							\
 		",
 	Number, Operator, Expression, Zuzeelik);
 
 
-	puts("zuzeelik [ version: v0.0.0-0.1.1 ] \n");
+	puts("zuzeelik [ version: v0.0.0-0.1.2 ] \n");
 	puts("Press Ctrl+C to Exit \n");
 	
 	/* Starting REPL */
