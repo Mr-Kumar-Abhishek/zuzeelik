@@ -1,8 +1,25 @@
 # zuzeelik
 A programming language similar to lisp.
 
-* compilation: `cc -std=c99 -Wall zuzeelik.c mpc/mpc.c -ledit -lm -o zuzeelik`
-* cloning: `git clone --recursive https://github.com/Mr-Kumar-Abhishek/zuzeelik.git`
+####Cloning:
+
+Remember to get the submodules while cloning.
+```
+git clone --recursive <git repository url here>
+```
+Already have a copy of the repository locally without submodules ? Get them with:
+```
+git submodule update --init
+```
+
+####Compilation:
+
+* **For Linux:**
+Compile using c99. Libraries that are needed to be linked while compilation are *math* library and *editline* library.
+
+``` 
+cc -std=c99 -Wall zuzeelik.c mpc/mpc.c -ledit -lm -o zuzeelik
+```
 
 ####Syntax and operators:
 
