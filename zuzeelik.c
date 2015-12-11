@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
 	/* defining them with following language */
 	mpca_lang(MPCA_LANG_DEFAULT,
 		" 															   							\
-			number 	   : /-?[0-9]+/ ; 		  						   							\
+			number 	   : /-?[0-9]+(\\.[0-9]*)?/	; 		  						   				\
 			operator   : '+' | '-' | '*' | '/' | '%' | \"add\" | \"sub\" | \"mul\" | \"div\" ;	\
 			expression : <number> | '(' <operator> <expression>+ ')' ; 							\
 			zuzeelik   : /^/ <operator> <expression>+ /$/ ; 		   							\
@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
 	Number, Operator, Expression, Zuzeelik);
 
 
-	puts("zuzeelik [ version: v0.0.0-0.1.2 ] \n");
+	puts("zuzeelik [ version: v0.0.0-0.1.3 ] \n");
 	puts("Press Ctrl+C to Exit \n");
 	
 	/* Starting REPL */
