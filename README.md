@@ -1,4 +1,6 @@
 # zuzeelik
+
+[![Join the chat at https://gitter.im/Mr-Kumar-Abhishek/zuzeelik](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Mr-Kumar-Abhishek/zuzeelik?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 A programming language similar to lisp.
 
 ####Cloning:
