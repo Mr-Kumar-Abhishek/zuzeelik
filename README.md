@@ -1,6 +1,7 @@
 # zuzeelik
 
-[![Join the chat at https://gitter.im/Mr-Kumar-Abhishek/zuzeelik](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Mr-Kumar-Abhishek/zuzeelik?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at https://gitter.im/Mr-Kumar-Abhishek/zuzeelik](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Mr-Kumar-Abhishek/zuzeelik?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) 
+
 A programming language similar to lisp.
 
 ####Cloning:
@@ -21,6 +22,11 @@ Compile using c99. Libraries that are needed to be linked while compilation are 
 
 ``` 
 cc -std=c99 -Wall zuzeelik.c mpc/mpc.c -ledit -lm -o zuzeelik
+```
+Or this could be simply done by using make.
+
+```
+make
 ```
 
 ####Syntax and operators:
