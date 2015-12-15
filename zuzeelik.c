@@ -9,7 +9,6 @@
 	/* fake readline functions */
 	char* readline(char* prompt) {
 		fputs(prompt, stdout);
-		fputs(buffer, 2048, stdin);
 		fgets(buffer, 2048, stdin);
 		char* copy = malloc(strlen(buffer)+1);
 		strcpy(copy, buffer);
@@ -80,7 +79,7 @@ int main(int argc, char** argv) {
 	Number, Operator, Expression, Zuzeelik);
 
 
-	puts("zuzeelik [ version: v0.0.0-0.2.0 ] \n");
+	puts("zuzeelik [ version: v0.0.0-0.2.1 ] \n");
 	puts("Press Ctrl+C to Exit \n");
 	
 	/* Starting REPL */
