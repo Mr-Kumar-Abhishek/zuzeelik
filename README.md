@@ -47,6 +47,9 @@ Currently it supports `+` , `-`, `/` , `*` and `%` symbolic operators. In textua
  
 * output:
 ```
+
+Abstract Syntax Tree:
+
 > 
   regex 
   operator|char:1:1 '+'
@@ -58,4 +61,7 @@ Currently it supports `+` , `-`, `/` , `*` and `%` symbolic operators. In textua
     expression|number|regex:1:11 '2'
     char:1:12 ')'
   regex 
+
+
+Evaluated output: 6
 ```
