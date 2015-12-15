@@ -29,6 +29,38 @@
 
 #endif
 
+/*using operator string to see which operator to perform */
+long int evaluate_o(long int x, char* o, long int y){
+	if(strcmp(o, "+") == 0 || strcmp(o, "add") == 0 ) { return x + y; }
+	if(strcmp(o, "-") == 0 || strcmp(o, "sub") == 0 ) { return x - y; }
+	if(strcmp(o, "/") == 0 || strcmp(o, "div") == 0 ) { return x / y; }
+	if(strcmp(o, "*") == 0 || strcmp(o, "mul") == 0 ) { return x * y; }
+	if(strcmp(o, "%") == 0) {return x % y; }
+	return 0;
+}
+
+long int evaluate(mpc_ast_t* node){
+	
+	/*If tagged as number returning it directly */
+	if(strstr(node->tag, "number")){
+		return atoi(node->contents);
+	}
+
+	/*The operator is always second child */
+	char* o = node->children[1]->contents;
+
+	/* storing the third child in x */
+	long int x = evaluate(node->children[2]);
+
+	/* Iterating the remaining children and combining (from fourth child) */
+	int i = 3;
+	while(strstr(node->children[i]->tag, "expr")){
+		x = evaluate_o(x, o, evaluate(node->children[i]));
+		i++;
+	}
+	return x;
+}
+
 int main(int argc, char** argv) {
 
 	/* creating some parsers */
@@ -48,7 +80,7 @@ int main(int argc, char** argv) {
 	Number, Operator, Expression, Zuzeelik);
 
 
-	puts("zuzeelik [ version: v0.0.0-0.1.3 ] \n");
+	puts("zuzeelik [ version: v0.0.0-0.2.0 ] \n");
 	puts("Press Ctrl+C to Exit \n");
 	
 	/* Starting REPL */
@@ -59,12 +91,19 @@ int main(int argc, char** argv) {
 		/*Add input to history */
 		add_history(input);
 		
-		/* An attepmt to parse the input */
+		/* An attempt to parse the input */
 		mpc_result_t result;
 		if(mpc_parse("<stdin>", input, Zuzeelik, &result)) {
 
-			/* On success print the AST */
+			/* On success print the Abstract Syntax Tree */
+			printf("\nAbstract Syntax Tree:\n\n");
 			mpc_ast_print(result.output);
+			printf("\n\n");
+			
+			/*After this print the evaluated answer */
+			printf("Evaluated output: ");
+			long int answer = evaluate(result.output);
+			printf("%li\n", answer);
 			mpc_ast_delete(result.output);
 		}else {
 
