@@ -37,7 +37,7 @@ Zuzeelik follows [polish notation](http://en.wikipedia.org/wiki/Polish_notation)
 * `8 - ( 5 * 6) ` becomes  `- 8 (* 5 6)`
 * `(10 / 5) * (10 /2)` becomes `* (/ 10 5) ( / 10 2)` 
 
-Currently it supports `+` , `-`, `/` , `*` and `%` symbolic operators. In textual operators it supports `add`, `sub`, `mul` and `div`. Syntax is same for using symbolic and textual operators. 
+Currently it supports `+` , `-`, `/` , `*` and `%` symbolic operators. In textual operators it supports `add`, `sub`, `mul`, `div` and `mod`. Syntax is same for using symbolic and textual operators. 
 
 #####Examples:
 * input: 
