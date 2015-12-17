@@ -36,8 +36,12 @@ long int evaluate_o(long int x, char* o, long int y){
 	if(strcmp(o, "*") == 0 || strcmp(o, "mul") == 0 ) { return x * y; }
 	if(strcmp(o, "%") == 0 || strcmp(o, "mod") == 0 ) { return x % y; }
 	if(strcmp(o, "^") == 0 ) {return (pow(x,y));}
-	if(strcmp(o, "max") == 0 && x<=y ){ return y; } else{ return x; }
-	if(strcmp(o, "min") == 0 && y<=x ){ return y; } else{ return x; }
+	if(strcmp(o, "max") == 0 ){
+		if (x<=y ){ return y; } else if(x>y){ return x; } 
+	 }
+	if(strcmp(o, "min") == 0 ){
+		if (y<=x) { return y; } else if(y>x){ return x; }
+	}
 	return 0;
 }
 
@@ -83,7 +87,7 @@ int main(int argc, char** argv) {
 	Number, Operator, Expression, Zuzeelik);
 
 
-	puts("zuzeelik [ version: v0.0.0-0.2.4 ] \n");
+	puts("zuzeelik [ version: v0.0.0-0.2.5 ] \n");
 	puts("Press Ctrl+C to Exit \n");
 	
 	/* Starting REPL */
