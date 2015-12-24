@@ -28,6 +28,18 @@
 
 #endif
 
+/* count total number of nodes */
+int number_of_nodes(mpc_ast_t* nodes) {
+  if (nodes->children_num == 0) { return 1; }
+  if (nodes->children_num >= 1) {
+    int total = 1;
+    for (int i = 0; i < nodes->children_num; i++) {
+      total = total + number_of_nodes(nodes->children[i]);
+    }
+    return total;
+  }
+  return 0;
+}
 /*using operator string to see which operator to perform */
 long int evaluate_o(long int x, char* o, long int y){
 	if(strcmp(o, "+") == 0 || strcmp(o, "add") == 0 ) { return x + y; }
@@ -87,7 +99,7 @@ int main(int argc, char** argv) {
 	Number, Operator, Expression, Zuzeelik);
 
 
-	puts("zuzeelik [ version: v0.0.0-0.2.5 ] \n");
+	puts("zuzeelik [ version: v0.0.0-0.2.6 ] \n");
 	puts("Press Ctrl+C to Exit \n");
 	
 	/* Starting REPL */
@@ -105,9 +117,9 @@ int main(int argc, char** argv) {
 			/* On success print the Abstract Syntax Tree */
 			printf("\nAbstract Syntax Tree:\n\n");
 			mpc_ast_print(result.output);
-			printf("\n\n");
+			printf("\n\nTotal number of nodes: %i\n\n", number_of_nodes(result.output));
 			
-			/*After this print the evaluated answer */
+			/*Print the evaluated answer */
 			printf("Evaluated output: ");
 			long int answer = evaluate(result.output);
 			printf("%li\n", answer);
