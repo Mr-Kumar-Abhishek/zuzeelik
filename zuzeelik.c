@@ -67,9 +67,17 @@ long int evaluate(mpc_ast_t* node){
 	/*The operator is always second child */
 	char* o = node->children[1]->contents;
 
-	/* storing the third child in x */
-	long int x = evaluate(node->children[2]);
+	/* initalizing for x to store third child*/
+	long int x = 0; 
 
+	/* special case if getting only one negative number */
+	if ( node->children_num == 4 && strcmp(o, "-") == 0) {
+		x = evaluate_o(0, o, evaluate(node->children[2]));
+	}else {
+		/* storing the third child in x */
+	 x = evaluate(node->children[2]);	
+	}
+	
 	/* Iterating the remaining children and combining (from fourth child) */
 	int i = 3;
 	while(strstr(node->children[i]->tag, "expr")){
@@ -99,7 +107,7 @@ int main(int argc, char** argv) {
 	Number, Operator, Expression, Zuzeelik);
 
 
-	puts("zuzeelik [ version: v0.0.0-0.2.6 ] \n");
+	puts("zuzeelik [ version: v0.0.0-0.2.7 ] \n");
 	puts("Press Ctrl+C to Exit \n");
 	
 	/* Starting REPL */
