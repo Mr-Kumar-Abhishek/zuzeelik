@@ -47,7 +47,7 @@ long int evaluate_o(long int x, char* o, long int y){
 	if(strcmp(o, "/") == 0 || strcmp(o, "div") == 0 ) { return x / y; }
 	if(strcmp(o, "*") == 0 || strcmp(o, "mul") == 0 ) { return x * y; }
 	if(strcmp(o, "%") == 0 || strcmp(o, "mod") == 0 ) { return x % y; }
-	if(strcmp(o, "^") == 0 ) {return (pow(x,y));}
+	if(strcmp(o, "^") == 0 || strcmp(o, "pow") == 0 ) { return (pow(x,y)); }
 	if(strcmp(o, "max") == 0 ){
 		if (x<=y ){ return y; } else if(x>y){ return x; } 
 	 }
@@ -100,14 +100,14 @@ int main(int argc, char** argv) {
 		" 										                                                                \
 			number 	   : /-?[0-9]+(\\.[0-9]*)?/	;                                                               \
 			operator   : '+' | '-' | '*' | '/' | '%' | '^' |                                                    \
-			             \"add\" | \"sub\" | \"mul\" | \"div\" | \"mod\" | \"max\" | \"min\" ;	                \
+			             \"add\" | \"sub\" | \"mul\" | \"div\" | \"mod\" | \"max\" | \"min\"  | \"pow\"  ;	    \
 			expression : <number> | '(' <operator> <expression>+ ')' ;                                          \
 			zuzeelik   : /^/ <operator> <expression>+ /$/ ; 		                                            \
 		",
 	Number, Operator, Expression, Zuzeelik);
 
 
-	puts("zuzeelik [ version: v0.0.0-0.2.7 ] \n");
+	puts("zuzeelik [ version: v0.0.0-0.2.8 ] \n");
 	puts("Press Ctrl+C to Exit \n");
 	
 	/* Starting REPL */
