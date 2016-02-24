@@ -6,6 +6,7 @@
 #include <string.h>
 
 	static char buffer[2048];
+
 	/* fake readline functions */
 	char* readline(char* prompt) {
 		fputs(prompt, stdout);
@@ -17,10 +18,12 @@
 	}
 	/* fake add_history function */
 	void add_history(char* not_used) {}
+
 /* or include these editline header */
 #else 
 
 	#include <editline/readline.h>
+
 	/*if not not OS X then include header file below*/
 	#ifndef __APPLE__
 		#include <editline/history.h>
@@ -34,18 +37,23 @@ enum { ZERROR_DIV_ZERO, ZERROR_MOD_ZERO, ZERROR_BAD_OP, ZERROR_BAD_NUMBER };
 /* creating enumeration of possible zval types */
 enum { ZVAL_NUMBER, ZVAL_ERROR };
 
+/* Declaring new zdata union */
+typedef union zdata {
+	int er;
+	long number;
+} zdata;
+
 /* Declaring new zval struct */
 typedef struct {
 	int type;
-	long number;
-	int er;
+	zdata data;
 } zval;
 
 /* creating new number type zval */
 zval zval_number(long x) {
 	zval val;
 	val.type = ZVAL_NUMBER;
-	val.number = x;
+	val.data.number = x;
 	return val;
 }
 
@@ -53,7 +61,7 @@ zval zval_number(long x) {
 zval zval_error(int x) {
 	zval val;
 	val.type = ZVAL_ERROR;
-	val.er = x;
+	val.data.er = x;
 	return val;
 } 
 
@@ -64,24 +72,24 @@ void zval_print(zval val) {
 		/* in case the type is a number print it */
 		/* Also, then break out of the switch */
 		case ZVAL_NUMBER:
-			printf("%li", val.number);
+			printf("%li", val.data.number);
 		break;
 
 		case ZVAL_ERROR:
 			printf("[error] \n\n");
 
 			/* checking which type of error it is */
-			if ( val.er == ZERROR_DIV_ZERO ) {
-				printf("Error Code: %i \n\nError message: huh ?! Division by zero ?!! \n", val.er);
+			if ( val.data.er == ZERROR_DIV_ZERO ) {
+				printf("Error Code: %i \n\nError message: huh ?! Division by zero ?!! \n", val.data.er);
 			}
-			if ( val.er == ZERROR_MOD_ZERO ) {
-				printf("Error Code: %i \n\nError message: huh ?! Modulo by zero ?!! \n", val.er);
+			if ( val.data.er == ZERROR_MOD_ZERO ) {
+				printf("Error Code: %i \n\nError message: huh ?! Modulo by zero ?!! \n", val.data.er);
 			}
-			if ( val.er == ZERROR_BAD_OP ){
-				printf("Error Code: %i \n\nError message: I don't know this operator, rest is up to you.. \n", val.er);
+			if ( val.data.er == ZERROR_BAD_OP ){
+				printf("Error Code: %i \n\nError message: I don't know this operator, rest is up to you.. \n", val.data.er);
 			}
-			if( val.er == ZERROR_BAD_NUMBER ) {
-				printf("Error Code: %i \n\nError message: Bad Number ! Just BAD ! >:( \n ", val.er);
+			if( val.data.er == ZERROR_BAD_NUMBER ) {
+				printf("Error Code: %i \n\nError message: Bad Number ! Just BAD ! >:( \n ", val.data.er);
 			}
 		break;
 	}
@@ -114,25 +122,25 @@ zval evaluate_o(zval x, char* o, zval y){
 	if ( y.type == ZVAL_ERROR ) { return y; }
 
 	/* otherwise doing calculations on number values */
-	if(strcmp(o, "+") == 0 || strcmp(o, "add") == 0 ) { return zval_number( x.number + y.number ); }
-	if(strcmp(o, "-") == 0 || strcmp(o, "sub") == 0 ) { return zval_number( x.number - y.number ); }
+	if(strcmp(o, "+") == 0 || strcmp(o, "add") == 0 ) { return zval_number( x.data.number + y.data.number ); }
+	if(strcmp(o, "-") == 0 || strcmp(o, "sub") == 0 ) { return zval_number( x.data.number - y.data.number ); }
 	if(strcmp(o, "/") == 0 || strcmp(o, "div") == 0 ) {
 	 	
 	 	/*if the second operand is zero then returning an error */
-	 	return y.number == 0 ? zval_error( ZERROR_DIV_ZERO ): zval_number( x.number / y.number ); 
+	 	return y.data.number == 0 ? zval_error( ZERROR_DIV_ZERO ): zval_number( x.data.number / y.data.number ); 
 	}
-	if(strcmp(o, "*") == 0 || strcmp(o, "mul") == 0 ) { return zval_number( x.number * y.number ); }
+	if(strcmp(o, "*") == 0 || strcmp(o, "mul") == 0 ) { return zval_number( x.data.number * y.data.number ); }
 	if(strcmp(o, "%") == 0 || strcmp(o, "mod") == 0 ) {
 		
 		/* Agian, if the second operand is zero then returning an error */	
-		 return y.number == 0 ? zval_error( ZERROR_MOD_ZERO ): zval_number( x.number % y.number ); 
+		 return y.data.number == 0 ? zval_error( ZERROR_MOD_ZERO ): zval_number( x.data.number % y.data.number ); 
 	}
-	if(strcmp(o, "^") == 0 || strcmp(o, "pow") == 0 ) { return zval_number((pow(x.number,y.number))); }
+	if(strcmp(o, "^") == 0 || strcmp(o, "pow") == 0 ) { return zval_number((pow(x.data.number,y.data.number))); }
 	if(strcmp(o, "max") == 0 ){
-		if (x.number<=y.number ){ return y; } else if(x.number>y.number){ return x; } 
+		if (x.data.number<=y.data.number ){ return y; } else if(x.data.number>y.data.number){ return x; } 
 	 }
 	if(strcmp(o, "min") == 0 ){
-		if (y.number<=x.number) { return y; } else if(y.number>x.number){ return x; }
+		if (y.data.number<=x.data.number) { return y; } else if(y.data.number>x.data.number){ return x; }
 	}
 	return zval_error( ZERROR_BAD_OP );
 }
@@ -141,6 +149,7 @@ zval evaluate(mpc_ast_t* node){
 
 	/*If tagged as number ... */
 	if(strstr(node->tag, "number")){
+		
 		/* checking if there is any error in conversion */
 		errno = 0;
 		long x = strtol(node->contents, NULL, 10);
