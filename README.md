@@ -4,7 +4,7 @@
 
 A programming language similar to lisp.
 
-####Cloning:
+#### Cloning:
 
 Remember to get the submodules while cloning.
 ```
@@ -15,7 +15,7 @@ Already have a copy of the repository locally without submodules ? Get them with
 git submodule update --init
 ```
 
-####Compilation:
+#### Compilation:
 
 * **For Linux:**
 Compile using c99. Libraries that are needed to be linked while compilation are *math* library and *editline* library.
@@ -29,7 +29,7 @@ Or this could be simply done by using make.
 make
 ```
 
-####Syntax and operators:
+#### Syntax and operators:
 
 Zuzeelik follows [polish notation](http://en.wikipedia.org/wiki/Polish_notation) while reading inputs. Those who are not familiar with it , try prefixing operators, such as:
 
@@ -39,7 +39,7 @@ Zuzeelik follows [polish notation](http://en.wikipedia.org/wiki/Polish_notation)
 
 Currently it supports `+` , `-`, `/` , `*`, `%` and `^` symbolic operators. In textual operators it supports `add`, `sub`, `mul`, `div`, `mod`, `min`, `max` and `pow`. Syntax is same for using symbolic and textual operators. 
 
-#####Examples:
+##### Examples:
 * input: 
  ```
  zuzeelik> + 4 ( / 4 2)
