@@ -56,7 +56,7 @@ zval* zval_number(long x) {
 	return val;
 }
 
-// constructing a pointer to a new error zval 
+// constructing a pointer to a new error type zval 
 zval* zval_error(char* err) {
 	zval* val = malloc(sizeof(zval));
 	val->type = ZVAL_ERROR;
@@ -108,17 +108,17 @@ void zval_delete(zval* val) {
 	free(val);
 }
 
-zval* zval_read_number(mpc_ast_t* node) {
-	errno = 0;
-	long x = strtol(node->contents, NULL, 0);
-	return errno != ERANGE ? zval_number(x) : zval_error( "Invalid number !");
-}
-
 zval* zval_increase(zval* val, zval* x){
 	val->count++;
 	val->cell =  realloc(val->cell, sizeof(zval*) * val->count);
 	val->cell[val->count - 1] = x;
 	return val;
+}
+
+zval* zval_read_number(mpc_ast_t* node) {
+	errno = 0;
+	long x = strtol(node->contents, NULL, 0);
+	return errno != ERANGE ? zval_number(x) : zval_error( "Invalid number !");
 }
 
 zval* zval_read(mpc_ast_t* node) {
@@ -142,7 +142,8 @@ zval* zval_read(mpc_ast_t* node) {
 	return x;
 }
 
-void zval_print(zval* );
+// forward declaration for zval_print() used in zval_expression_print()
+void zval_print(zval* val);
 
 void zval_expression_print(zval* val, char start, char end) {
 	putchar(start);
@@ -163,7 +164,7 @@ void zval_print(zval* val) {
 	switch(val->type) {
 
 		case ZVAL_NUMBER: printf("%li", val->number); break;
-		case ZVAL_ERROR: printf("Error: %s", val->er); break;
+		case ZVAL_ERROR: printf("[error]\nError response: %s", val->er); break;
 		case ZVAL_SYMBOL: printf("%s", val->sy); break;
 		case ZVAL_SYM_EXRESSION: zval_expression_print(val, '(', ')'); break;
 	}
@@ -174,6 +175,130 @@ void zval_println(zval* val){
 	zval_print(val);
 	putchar('\n');
 }
+
+zval* zval_pop (zval* val, int i) {
+	
+	// finding the item at i
+	zval* x  = val->cell[i];
+
+	// shifting memory after the item at "i" over the top
+	memmove(&val->cell[i], &val->cell[i+1], sizeof(zval*) * val->count - i - 1);
+
+	// decreasing the count of items in the list
+	val->count--;
+
+	// relocating the memory used
+	val->cell = realloc(val->cell, sizeof(zval*) * val->count);
+
+	return x;
+}
+
+zval* zval_pick(zval* val, int i) {
+	zval* x = zval_pop(val, i);
+	zval_delete(val);
+	return x;
+}
+
+// using operator string to see which operation to perform
+zval* builtin_operators(zval* val, char* o) {
+
+	// first ensuring all arguments are numbers
+	for(int i = 0; i < val->count; i ++ ){
+		if (val->cell[i]->type != ZVAL_NUMBER ) {
+			zval_delete(val);
+			return zval_error("Cannot operate on a non-number !!");
+		}
+	}
+
+	// popping the first element
+	zval* x = zval_pop(val, 0);
+
+	// if no arguments and a "sub" or a "-" then performing a unary negation
+	if((strcmp(o, "-") == 0 || strcmp(o, "sub") == 0 ) && val->count == 0) {
+		x->number = - x->number;
+	}
+
+	// while there are still elements remaining
+	while(val->count > 0) {
+
+		// popping the next element
+		zval *y = zval_pop(val, 0);
+
+		if (strcmp(o, "+") == 0 || strcmp(o, "add") == 0 ) { x->number += y->number; }
+		if (strcmp(o, "-") == 0 || strcmp(o, "sub") == 0 ) { x->number -= y->number; }
+		if (strcmp(o, "*") == 0 || strcmp(o, "mul") == 0 ) { x->number *= y->number; }
+		if (strcmp(o, "/") == 0 || strcmp(o, "div") == 0 ) {
+
+			// if the second operand is zero then returning an error and breaking out
+			if( y->number == 0 ){
+				zval_delete(x); zval_delete(y);
+				x = zval_error("Division by zero !!??"); break;
+			}
+			x->number /= y->number; 
+		}
+		if ( strcmp(o, "%") == 0 || strcmp(o, "mod") == 0 ) {
+
+			// Again, if the second operand is zero then returning an error and breaking out
+			if( y->number == 0 ){
+				zval_delete(x); zval_delete(y);
+				x = zval_error("Modulo by zero !! ??"); break;
+			}
+			x->number %= y->number;
+		}
+		if ( strcmp(o, "^") == 0 || strcmp(o, "pow") == 0 ) { x->number = pow(x->number, y->number); }
+		if ( strcmp(o, "max") == 0) { 
+			if( x->number < y->number ) { x->number = y->number; }
+		}
+		if ( strcmp(o, "min") == 0 ) {
+			if ( y->number < y->number ) { x->number = y->number;}
+		}
+		zval_delete(y);
+	}
+	zval_delete(val); return x;
+}
+
+// forward declatation of zval_evaluate() used in zval_evaluate_sym_expression()
+zval* zval_evaluate(zval* val);
+
+zval* zval_evaluate_sym_expression (zval* val) {
+
+	//evalualtion of the children
+	for ( int i = 0; i < val->count; i++ ){
+		val->cell[i] = zval_evaluate(val->cell[i]);
+	}
+
+	// checking for errors 
+	for (int i = 0; i < val->count; i++ ){
+		if (val->cell[i]->type == ZVAL_ERROR ) { return zval_pick(val, i); }
+	}
+
+	// if getting an empty expression
+	if (val->count == 0) { return val; }
+
+	// if getting a single expression
+	if (val->count == 1) { return zval_pick(val, 1); }
+
+	// ensuring first element is a symbol
+	zval* first_element = zval_pop(val, 0);
+	if (first_element->type != ZVAL_SYMBOL ) {
+		zval_delete(first_element); zval_delete(val);
+		return zval_error("sym-expression is not starting with a symbol !!");
+	}
+
+	// calling builtin operators
+	zval* r = builtin_operators(val, first_element->sy);
+	return r;
+}
+
+zval* zval_evaluate(zval* val) {
+	
+	// evaluating sym-expressions 
+	if ( val->type == ZVAL_SYM_EXRESSION ) { return zval_evaluate_sym_expression(val);}
+
+	// all the other zval types remains the same
+	return val;
+}
+
 
 // count total number of nodes 
 int number_of_nodes(mpc_ast_t* nodes) {
@@ -188,74 +313,6 @@ int number_of_nodes(mpc_ast_t* nodes) {
   return 0;
 }
 
-// using operator string to see which operation to perform 
-/*
-zval evaluate_o(zval x, char* o, zval y){
-
-	// If any value is an error then return it 
-	if ( x.type == ZVAL_ERROR ) { return x; }
-	if ( y.type == ZVAL_ERROR ) { return y; }
-
-	// otherwise doing calculations on number values 
-	if(strcmp(o, "+") == 0 || strcmp(o, "add") == 0 ) { return zval_number( x.number + y.number ); }
-	if(strcmp(o, "-") == 0 || strcmp(o, "sub") == 0 ) { return zval_number( x.number - y.number ); }
-	if(strcmp(o, "/") == 0 || strcmp(o, "div") == 0 ) {
-	 	
-	 	//if the second operand is zero then returning an error
-	 	return y.number == 0 ? zval_error( ZERROR_DIV_ZERO ): zval_number( x.number / y.number ); 
-	}
-	if(strcmp(o, "*") == 0 || strcmp(o, "mul") == 0 ) { return zval_number( x.number * y.number ); }
-	if(strcmp(o, "%") == 0 || strcmp(o, "mod") == 0 ) {
-		
-		// Agian, if the second operand is zero then returning an error 	
-		 return y.number == 0 ? zval_error( ZERROR_MOD_ZERO ): zval_number( x.number % y.number ); 
-	}
-	if(strcmp(o, "^") == 0 || strcmp(o, "pow") == 0 ) { return zval_number((pow(x.number,y.number))); }
-	if(strcmp(o, "max") == 0 ){
-		if (x.number<=y.number ){ return y; } else if(x.number>y.number){ return x; } 
-	 }
-	if(strcmp(o, "min") == 0 ){
-		if (y.number<=x.number) { return y; } else if(y.number>x.number){ return x; }
-	}
-	return zval_error( ZERROR_BAD_OP );
-}
-*/
-/*
-zval evaluate(mpc_ast_t* node){
-
-	// If tagged as number ... 
-	if(strstr(node->tag, "number")){
-		
-		// checking if there is any error in conversion 
-		errno = 0;
-		long x = strtol(node->contents, NULL, 10);
-		return errno != ERANGE ? zval_number(x) : zval_error( ZERROR_BAD_NUMBER );
-	}
-
-	// The operator is always second child 
-	char* o = node->children[1]->contents;
-
-	// initalizing for x to store third child, later on
-	// by default a zval error of being a bad number 
-	zval x = zval_error( ZERROR_BAD_NUMBER ); 
-
-	// special case of getting only one negative number or expression 
-	if ( node->children_num == 4 && strcmp(o, "-") == 0) {
-		x = evaluate_o(zval_number(0), o, evaluate(node->children[2]));
-	}else {
-		// storing the third child in x 
-	 	x = evaluate(node->children[2]);	
-	}
-	
-	// Iterating the remaining children and combining (from fourth child) 
-	int i = 3;
-	while(strstr(node->children[i]->tag, "expr")){
-		x = evaluate_o(x, o, evaluate(node->children[i]));
-		i++;
-	}
-	return x;
-}
-*/
 int main(int argc, char** argv) {
 
 	// creating some parsers 
@@ -278,7 +335,7 @@ int main(int argc, char** argv) {
 	Number, Symbol, Sym_expression, Expression, Zuzeelik);
 
 
-	puts("zuzeelik [ version: v0.0.0-0.3.0 ] \n");
+	puts("zuzeelik [ version: v0.0.0-0.4.0 ] \n");
 	puts("Press Ctrl+C to Exit \n");
 	
 	// Starting REPL 
@@ -299,16 +356,17 @@ int main(int argc, char** argv) {
 			mpc_ast_print(result.output);
 			printf("\n\nTotal number of nodes: %i\n\n", number_of_nodes(result.output)); 
 			
-		/*	// Print the evaluated answer 
-			printf("Evaluated output: ");
-			zval answer = evaluate(result.output);
-			zval_println(answer); */
-
 			//Print the the recieved input
 			printf("Recieved input: ");
-			zval* x = zval_read(result.output);
-			zval_println(x);
-			zval_delete(x);	
+			zval* recieved = zval_read(result.output);
+			zval_println(recieved);
+			zval_delete(recieved);
+
+			// print evaluated answer
+			printf("Evaluated output: ");
+			zval* answer = zval_evaluate(zval_read(result.output));
+			zval_println(answer);
+			zval_delete(answer);	
 			mpc_ast_delete(result.output); 
 		}else {
 
