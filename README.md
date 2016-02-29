@@ -31,13 +31,28 @@ make
 
 #### Syntax and operators:
 
-Zuzeelik follows [polish notation](http://en.wikipedia.org/wiki/Polish_notation) while reading inputs. Those who are not familiar with it , try prefixing operators, such as:
+Zuzeelik uses *sym-expressions*, which is similar to [s-expressions](https://en.wikipedia.org/wiki/S-expression), however internally a variable sized array is used to represents it. Use [polish notation](http://en.wikipedia.org/wiki/Polish_notation) with operators rather than [infix notation](https://en.wikipedia.org/wiki/Infix_notation), such as:
 
-* `1 + 4 + 9` becomes `+ 1 4 9`
-* `8 - ( 5 * 6) ` becomes  `- 8 (* 5 6)`
-* `(10 / 5) * (10 /2)` becomes `* (/ 10 5) ( / 10 2)` 
+|     Infix Notation    |      Polish Notation     |
+|:---------------------:|:------------------------:|
+|     `1 + 4 + 9`       |       `+ 1 4 9`       
+|   `8 - ( 5 * 6) `     |   `- 8 (* 5 6)`        
+| `(10 / 5) * (10 / 2)` |  `* (/ 10 5) ( / 10 2)`   
 
-Currently it supports `+` , `-`, `/` , `*`, `%` and `^` symbolic operators. In textual operators it supports `add`, `sub`, `mul`, `div`, `mod`, `min`, `max` and `pow`. Syntax is same for using symbolic and textual operators. 
+
+Currently, it supports following symbolic and textual operators:
+
+
+|     Operator Name     | Symbolic operator syntax | Textual operator syntax
+|:---------------------:|:------------------------:|:----------------------:
+|        Addition       |       `( + 1 4 9 )`      |     `( add 1 4 9 )`    
+|      Subtraction      |       `( - 23 4 9 )`     |    `( sub  23 4 9 )`
+|     Multiplication    |       `(* 23 12 9 )`     |    `( mul 23 12 9 )`     
+|       Division        |       `( / 8 4 2  )`     |    `( div  8 4 2  )`  
+|        Modulo         |       `( % 64 8 4 )`     |    `( mod  64 8 4 )`   
+|         max           |                          |    `( max 23 34 55)`  
+|         min           |                          |    `( min 23 34 55)` 
+|         pow           |        `( ^ 4 3 )`       |      `( pow 4 3 )`  
 
 ##### Examples:
 * input: 
@@ -47,21 +62,24 @@ Currently it supports `+` , `-`, `/` , `*`, `%` and `^` symbolic operators. In t
  
 * output:
 ```
-
 Abstract Syntax Tree:
 
 > 
   regex 
-  operator|char:1:1 '+'
+  expression|symbol|char:1:1 '+'
   expression|number|regex:1:3 '4'
-  expression|> 
+  sym_expression|> 
     char:1:5 '('
-    operator|char:1:7 '/'
+    expression|symbol|char:1:7 '/'
     expression|number|regex:1:9 '4'
     expression|number|regex:1:11 '2'
-    char:1:12 ')'
+    char:1:13 ')'
   regex 
 
 
+Total number of nodes: 11
+
+Recieved input: (+ 4 (/ 4 2))
 Evaluated output: 6
+
 ```
