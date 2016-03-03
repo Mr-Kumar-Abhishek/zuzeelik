@@ -31,7 +31,7 @@ make
 
 #### Syntax and operators:
 
-Zuzeelik uses *sym-expressions*, which is similar to [s-expressions](https://en.wikipedia.org/wiki/S-expression), however internally a variable sized array is used to represents it. Use [polish notation](http://en.wikipedia.org/wiki/Polish_notation) with operators rather than [infix notation](https://en.wikipedia.org/wiki/Infix_notation), such as:
+Zuzeelik uses *sym-expressions*, which is similar to [s-expressions](https://en.wikipedia.org/wiki/S-expression), however internally a variable sized array is used to represent it. Use [polish notation](http://en.wikipedia.org/wiki/Polish_notation) with operators rather than [infix notation](https://en.wikipedia.org/wiki/Infix_notation), such as:
 
 |     Infix Notation    |      Polish Notation     |
 |:---------------------:|:------------------------:|
