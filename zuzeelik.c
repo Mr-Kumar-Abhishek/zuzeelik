@@ -276,7 +276,7 @@ zval* zval_evaluate_sym_expression (zval* val) {
 	if (val->count == 0) { return val; }
 
 	// if getting a single expression
-	if (val->count == 1) { return zval_pick(val, 1); }
+	if (val->count == 1) { return zval_pick(val, 0); }
 
 	// ensuring first element is a symbol
 	zval* first_element = zval_pop(val, 0);
