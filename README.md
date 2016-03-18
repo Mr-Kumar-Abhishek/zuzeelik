@@ -1,7 +1,6 @@
-[![Stories in Ready](https://badge.waffle.io/Mr-Kumar-Abhishek/zuzeelik.png?label=ready&title=Ready)](https://waffle.io/Mr-Kumar-Abhishek/zuzeelik)
 # zuzeelik
 
-[![Join the chat at https://gitter.im/Mr-Kumar-Abhishek/zuzeelik](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Mr-Kumar-Abhishek/zuzeelik?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/Mr-Kumar-Abhishek/zuzeelik.svg?branch=master)](https://travis-ci.org/Mr-Kumar-Abhishek/zuzeelik)
+[![Join the chat at https://gitter.im/Mr-Kumar-Abhishek/zuzeelik](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Mr-Kumar-Abhishek/zuzeelik?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/Mr-Kumar-Abhishek/zuzeelik.svg?branch=master)](https://travis-ci.org/Mr-Kumar-Abhishek/zuzeelik) [![Stories in Ready](https://badge.waffle.io/Mr-Kumar-Abhishek/zuzeelik.png?label=ready&title=Ready)](https://waffle.io/Mr-Kumar-Abhishek/zuzeelik)
 
 A programming language similar to lisp.
 
