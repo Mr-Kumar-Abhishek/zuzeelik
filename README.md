@@ -4,6 +4,8 @@
 
 A programming language similar to lisp.
 
+[![Throughput Graph](https://graphs.waffle.io/Mr-Kumar-Abhishek/zuzeelik/throughput.svg)](https://waffle.io/Mr-Kumar-Abhishek/zuzeelik/metrics)
+
 #### Cloning:
 
 Remember to get the submodules while cloning.
