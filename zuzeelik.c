@@ -357,10 +357,10 @@ int main(int argc, char** argv) {
 			printf("\n\nTotal number of nodes: %i\n\n", number_of_nodes(result.output)); 
 			
 			//Print the the recieved input
-			printf("Recieved input: ");
-			zval* recieved = zval_read(result.output);
-			zval_println(recieved);
-			zval_delete(recieved);
+			printf("Received input: ");
+			zval* received = zval_read(result.output);
+			zval_println(received);
+			zval_delete(received);
 
 			// print evaluated answer
 			printf("Evaluated output: ");
