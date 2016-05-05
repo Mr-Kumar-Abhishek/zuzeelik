@@ -34,17 +34,26 @@
 // creating enumeration of possible zval types 
 enum { ZVAL_NUMBER, ZVAL_ERROR, ZVAL_SYMBOL, ZVAL_SYM_EXRESSION };
 
-// Declaring new zval struct 
-typedef struct zval {
-	int type;
+// Declaring new zdata union
+typedef union zdata {
 	long number;
 
 	// error and symbol types has some string data 
 	char* er;
 	char* sy;
 
-	// count and pointer to the list "zval*" 
+	//count to the list "zval*"
 	int count;
+} zdata;
+
+// Declaring new zval struct 
+typedef struct zval {
+	int type;
+
+	// zdata union to hold only one type of data at a time
+	zdata data;
+
+	// pointer to the list "zval*" 
 	struct zval** cell;
 } zval;
 
@@ -52,7 +61,7 @@ typedef struct zval {
 zval* zval_number(long x) {
 	zval* val = malloc(sizeof(zval));
 	val->type = ZVAL_NUMBER;
-	val->number = x;
+	val->data.number = x;
 	return val;
 }
 
@@ -60,8 +69,8 @@ zval* zval_number(long x) {
 zval* zval_error(char* err) {
 	zval* val = malloc(sizeof(zval));
 	val->type = ZVAL_ERROR;
-	val->er = malloc((strlen(err) + 1));
-	strcpy(val->er, err);
+	val->data.er = malloc((strlen(err) + 1));
+	strcpy(val->data.er, err);
 	return val;
 }
 
@@ -69,8 +78,8 @@ zval* zval_error(char* err) {
 zval* zval_symbol(char* sym){
 	zval* val = malloc(sizeof(zval));
 	val->type = ZVAL_SYMBOL;
-	val->sy = malloc(strlen(sym + 1));
-	strcpy(val->sy, sym);
+	val->data.sy = malloc(strlen(sym + 1));
+	strcpy(val->data.sy, sym);
 	return val;
 }
 
@@ -78,7 +87,7 @@ zval* zval_symbol(char* sym){
 zval* zval_sym_expression(void) {
 	zval* val = malloc(sizeof(zval));
 	val->type = ZVAL_SYM_EXRESSION;
-	val->count = 0;
+	val->data.count = 0;
 	val->cell = NULL;
 	return val;
 }
@@ -90,12 +99,12 @@ void zval_delete(zval* val) {
 		case ZVAL_NUMBER: break;
 
 		// if error or symbol free the string data 
-		case ZVAL_ERROR:  free(val->er); break;
-		case ZVAL_SYMBOL: free(val->sy); break;
+		case ZVAL_ERROR:  free(val->data.er); break;
+		case ZVAL_SYMBOL: free(val->data.sy); break;
 
 		// if symbolic expression then delete all the elements inside 
 		case ZVAL_SYM_EXRESSION: 
-			for( int i = 0; i < val->count; i++ ) {
+			for( int i = 0; i < val->data.count; i++ ) {
 				zval_delete(val->cell[i]);
 			}
 
@@ -109,9 +118,9 @@ void zval_delete(zval* val) {
 }
 
 zval* zval_increase(zval* val, zval* x){
-	val->count++;
-	val->cell =  realloc(val->cell, sizeof(zval*) * val->count);
-	val->cell[val->count - 1] = x;
+	val->data.count++;
+	val->cell =  realloc(val->cell, sizeof(zval*) * val->data.count);
+	val->cell[val->data.count - 1] = x;
 	return val;
 }
 
@@ -147,12 +156,12 @@ void zval_print(zval* val);
 
 void zval_expression_print(zval* val, char start, char end) {
 	putchar(start);
-	for(int i = 0; i < val->count; i ++) {
+	for(int i = 0; i < val->data.count; i ++) {
 		// print the value contained within 
 		zval_print(val->cell[i]);
 
 		// don't print the trailing space if it is the last element
-		if(i != val->count -1){
+		if(i != val->data.count -1){
 			putchar(' ');
 		}
 	}
@@ -163,9 +172,9 @@ void zval_expression_print(zval* val, char start, char end) {
 void zval_print(zval* val) {
 	switch(val->type) {
 
-		case ZVAL_NUMBER: printf("%li", val->number); break;
-		case ZVAL_ERROR: printf("[error]\nError response: %s", val->er); break;
-		case ZVAL_SYMBOL: printf("%s", val->sy); break;
+		case ZVAL_NUMBER: printf("%li", val->data.number); break;
+		case ZVAL_ERROR: printf("[error]\nError response: %s", val->data.er); break;
+		case ZVAL_SYMBOL: printf("%s", val->data.sy); break;
 		case ZVAL_SYM_EXRESSION: zval_expression_print(val, '(', ')'); break;
 	}
 }
@@ -182,13 +191,13 @@ zval* zval_pop (zval* val, int i) {
 	zval* x  = val->cell[i];
 
 	// shifting memory after the item at "i" over the top
-	memmove(&val->cell[i], &val->cell[i+1], sizeof(zval*) * val->count - i - 1);
+	memmove(&val->cell[i], &val->cell[i+1], sizeof(zval*) * val->data.count - i - 1);
 
 	// decreasing the count of items in the list
-	val->count--;
+	val->data.count--;
 
 	// relocating the memory used
-	val->cell = realloc(val->cell, sizeof(zval*) * val->count);
+	val->cell = realloc(val->cell, sizeof(zval*) * val->data.count);
 
 	return x;
 }
@@ -203,7 +212,7 @@ zval* zval_pick(zval* val, int i) {
 zval* builtin_operators(zval* val, char* o) {
 
 	// first ensuring all arguments are numbers
-	for(int i = 0; i < val->count; i ++ ){
+	for(int i = 0; i < val->data.count; i ++ ){
 		if (val->cell[i]->type != ZVAL_NUMBER ) {
 			zval_delete(val);
 			return zval_error("Cannot operate on a non-number !!");
@@ -214,43 +223,43 @@ zval* builtin_operators(zval* val, char* o) {
 	zval* x = zval_pop(val, 0);
 
 	// if no arguments and a "sub" or a "-" then performing a unary negation
-	if((strcmp(o, "-") == 0 || strcmp(o, "sub") == 0 ) && val->count == 0) {
-		x->number = - x->number;
+	if((strcmp(o, "-") == 0 || strcmp(o, "sub") == 0 ) && val->data.count == 0) {
+		x->data.number = - x->data.number;
 	}
 
 	// while there are still elements remaining
-	while(val->count > 0) {
+	while(val->data.count > 0) {
 
 		// popping the next element
 		zval *y = zval_pop(val, 0);
 
-		if (strcmp(o, "+") == 0 || strcmp(o, "add") == 0 ) { x->number += y->number; }
-		if (strcmp(o, "-") == 0 || strcmp(o, "sub") == 0 ) { x->number -= y->number; }
-		if (strcmp(o, "*") == 0 || strcmp(o, "mul") == 0 ) { x->number *= y->number; }
+		if (strcmp(o, "+") == 0 || strcmp(o, "add") == 0 ) { x->data.number += y->data.number; }
+		if (strcmp(o, "-") == 0 || strcmp(o, "sub") == 0 ) { x->data.number -= y->data.number; }
+		if (strcmp(o, "*") == 0 || strcmp(o, "mul") == 0 ) { x->data.number *= y->data.number; }
 		if (strcmp(o, "/") == 0 || strcmp(o, "div") == 0 ) {
 
 			// if the second operand is zero then returning an error and breaking out
-			if( y->number == 0 ){
+			if( y->data.number == 0 ){
 				zval_delete(x); zval_delete(y);
 				x = zval_error("Division by zero !!??"); break;
 			}
-			x->number /= y->number; 
+			x->data.number /= y->data.number; 
 		}
 		if ( strcmp(o, "%") == 0 || strcmp(o, "mod") == 0 ) {
 
 			// Again, if the second operand is zero then returning an error and breaking out
-			if( y->number == 0 ){
+			if( y->data.number == 0 ){
 				zval_delete(x); zval_delete(y);
 				x = zval_error("Modulo by zero !! ??"); break;
 			}
-			x->number %= y->number;
+			x->data.number %= y->data.number;
 		}
-		if ( strcmp(o, "^") == 0 || strcmp(o, "pow") == 0 ) { x->number = pow(x->number, y->number); }
+		if ( strcmp(o, "^") == 0 || strcmp(o, "pow") == 0 ) { x->data.number = pow(x->data.number, y->data.number); }
 		if ( strcmp(o, "max") == 0) { 
-			if( x->number < y->number ) { x->number = y->number; }
+			if( x->data.number < y->data.number ) { x->data.number = y->data.number; }
 		}
 		if ( strcmp(o, "min") == 0 ) {
-			if ( y->number < y->number ) { x->number = y->number;}
+			if ( y->data.number < y->data.number ) { x->data.number = y->data.number;}
 		}
 		zval_delete(y);
 	}
@@ -263,20 +272,20 @@ zval* zval_evaluate(zval* val);
 zval* zval_evaluate_sym_expression (zval* val) {
 
 	//evalualtion of the children
-	for ( int i = 0; i < val->count; i++ ){
+	for ( int i = 0; i < val->data.count; i++ ){
 		val->cell[i] = zval_evaluate(val->cell[i]);
 	}
 
 	// checking for errors 
-	for (int i = 0; i < val->count; i++ ){
+	for (int i = 0; i < val->data.count; i++ ){
 		if (val->cell[i]->type == ZVAL_ERROR ) { return zval_pick(val, i); }
 	}
 
 	// if getting an empty expression
-	if (val->count == 0) { return val; }
+	if (val->data.count == 0) { return val; }
 
 	// if getting a single expression
-	if (val->count == 1) { return zval_pick(val, 0); }
+	if (val->data.count == 1) { return zval_pick(val, 0); }
 
 	// ensuring first element is a symbol
 	zval* first_element = zval_pop(val, 0);
@@ -286,7 +295,7 @@ zval* zval_evaluate_sym_expression (zval* val) {
 	}
 
 	// calling builtin operators
-	zval* r = builtin_operators(val, first_element->sy);
+	zval* r = builtin_operators(val, first_element->data.sy);
 	return r;
 }
 
