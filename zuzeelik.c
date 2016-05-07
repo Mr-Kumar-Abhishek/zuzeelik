@@ -65,20 +65,24 @@ typedef struct zval {
 	zdata* data;
 } zval;
 
+// constructing a pointer to new zval
+zval* zval_create(int zval_type) {
+	zval* val = malloc(sizeof(zval));
+	val->type = zval_type;
+	val->data = malloc(sizeof(zdata));
+	return val;
+}
+
 // constructing a pointer to a new number zval 
 zval* zval_number(long x) {
-	zval* val = malloc(sizeof(zval));
-	val->type = ZVAL_NUMBER;
-	val->data = malloc(sizeof(zdata));
+	zval* val = zval_create(ZVAL_NUMBER);
 	val->data->number = x;
 	return val;
 }
 
 // constructing a pointer to a new error type zval 
 zval* zval_error(char* err) {
-	zval* val = malloc(sizeof(zval));
-	val->type = ZVAL_ERROR;
-	val->data = malloc(sizeof(zdata));
+	zval* val = zval_create(ZVAL_ERROR);
 	val->data->er = malloc((strlen(err) + 1));
 	strcpy(val->data->er, err);
 	return val;
@@ -86,9 +90,7 @@ zval* zval_error(char* err) {
 
 // constructing a pointer new symbol type zval 
 zval* zval_symbol(char* sym){
-	zval* val = malloc(sizeof(zval));
-	val->type = ZVAL_SYMBOL;
-	val->data = malloc(sizeof(zdata));
+	zval* val = zval_create(ZVAL_SYMBOL);
 	val->data->sy = malloc(strlen(sym + 1));
 	strcpy(val->data->sy, sym);
 	return val;
@@ -96,9 +98,7 @@ zval* zval_symbol(char* sym){
 
 // constructing a pointer to new empty symbolic expressions 
 zval* zval_sym_expression(void) {
-	zval* val = malloc(sizeof(zval));
-	val->type = ZVAL_SYM_EXRESSION;
-	val->data = malloc(sizeof(zdata));
+	zval* val = zval_create(ZVAL_SYM_EXRESSION);
 	val->data->list = malloc(sizeof(zlist));
 	val->data->list->count = 0;
 	val->data->list->cell = NULL;
