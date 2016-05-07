@@ -2,7 +2,7 @@
 
 [![Join the chat at https://gitter.im/Mr-Kumar-Abhishek/zuzeelik](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Mr-Kumar-Abhishek/zuzeelik?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/Mr-Kumar-Abhishek/zuzeelik.svg?branch=master)](https://travis-ci.org/Mr-Kumar-Abhishek/zuzeelik) [![Stories in Ready](https://badge.waffle.io/Mr-Kumar-Abhishek/zuzeelik.png?label=ready&title=Ready)](https://waffle.io/Mr-Kumar-Abhishek/zuzeelik)
 
-A programming language similar to [Lisp](https://en.wikipedia.org/wiki/Lisp_%28programming_language%29).
+A programming language similar to [Lisp](https://en.wikipedia.org/wiki/Lisp_%28programming_language%29). [LispStrawMen](http://c2.com/cgi/wiki?LispStrawMen), this is not exactly a Lisp Dialect. 
 
 [![Throughput Graph](https://graphs.waffle.io/Mr-Kumar-Abhishek/zuzeelik/throughput.svg)](https://waffle.io/Mr-Kumar-Abhishek/zuzeelik/metrics)
 
