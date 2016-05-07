@@ -68,20 +68,20 @@ Abstract Syntax Tree:
 
 > 
   regex 
-  expression|symbol|char:1:1 '+'
-  expression|number|regex:1:3 '4'
+  expression|symbol|char:1:2 '+'
+  expression|number|regex:1:4 '4'
   sym_expression|> 
-    char:1:5 '('
-    expression|symbol|char:1:7 '/'
-    expression|number|regex:1:9 '4'
-    expression|number|regex:1:11 '2'
+    char:1:6 '('
+    expression|symbol|char:1:8 '/'
+    expression|number|regex:1:10 '4'
+    expression|number|regex:1:12 '2'
     char:1:13 ')'
   regex 
 
 
 Total number of nodes: 11
 
-Recieved input: (+ 4 (/ 4 2))
+Received input: (+ 4 (/ 4 2))
 Evaluated output: 6
 
 ```
