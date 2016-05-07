@@ -54,7 +54,7 @@ typedef union zdata {
 	char* sy;
 
 	// zlist struct to hold other zval cells
-	zlist list;
+	zlist* list;
 } zdata;
 
 // Declaring new zval struct 
@@ -99,8 +99,9 @@ zval* zval_sym_expression(void) {
 	zval* val = malloc(sizeof(zval));
 	val->type = ZVAL_SYM_EXRESSION;
 	val->data = malloc(sizeof(zdata));
-	val->data->list.count = 0;
-	val->data->list.cell = NULL;
+	val->data->list = malloc(sizeof(zlist));
+	val->data->list->count = 0;
+	val->data->list->cell = NULL;
 	return val;
 }
 
@@ -116,12 +117,15 @@ void zval_delete(zval* val) {
 
 		// if symbolic expression then delete all the elements inside 
 		case ZVAL_SYM_EXRESSION: 
-			for( int i = 0; i < val->data->list.count; i++ ) {
-				zval_delete(val->data->list.cell[i]);
+			for( int i = 0; i < val->data->list->count; i++ ) {
+				zval_delete(val->data->list->cell[i]);
 			}
 
-			// Also, free the memory contained in the pointers 
-			free(val->data->list.cell);
+			// free the memory contained in the pointers 
+			free(val->data->list->cell);
+
+			// Also, free the memory contained in zlist.
+			free(val->data->list);
 		break;
 	}
 	
@@ -133,9 +137,9 @@ void zval_delete(zval* val) {
 }
 
 zval* zval_increase(zval* val, zval* x){
-	val->data->list.count++;
-	val->data->list.cell =  realloc(val->data->list.cell, sizeof(zval*) * val->data->list.count);
-	val->data->list.cell[val->data->list.count - 1] = x;
+	val->data->list->count++;
+	val->data->list->cell =  realloc(val->data->list->cell, sizeof(zval*) * val->data->list->count);
+	val->data->list->cell[val->data->list->count - 1] = x;
 	return val;
 }
 
@@ -171,12 +175,12 @@ void zval_print(zval* val);
 
 void zval_expression_print(zval* val, char start, char end) {
 	putchar(start);
-	for(int i = 0; i < val->data->list.count; i ++) {
+	for(int i = 0; i < val->data->list->count; i ++) {
 		// print the value contained within 
-		zval_print(val->data->list.cell[i]);
+		zval_print(val->data->list->cell[i]);
 
 		// don't print the trailing space if it is the last element
-		if(i != val->data->list.count -1){
+		if(i != val->data->list->count -1){
 			putchar(' ');
 		}
 	}
@@ -203,16 +207,16 @@ void zval_println(zval* val){
 zval* zval_pop (zval* val, int i) {
 	
 	// finding the item at i
-	zval* x  = val->data->list.cell[i];
+	zval* x  = val->data->list->cell[i];
 
 	// shifting memory after the item at "i" over the top
-	memmove(&val->data->list.cell[i], &val->data->list.cell[i+1], sizeof(zval*) * val->data->list.count - i - 1);
+	memmove(&val->data->list->cell[i], &val->data->list->cell[i+1], sizeof(zval*) * val->data->list->count - i - 1);
 
 	// decreasing the count of items in the list
-	val->data->list.count--;
+	val->data->list->count--;
 
 	// relocating the memory used
-	val->data->list.cell = realloc(val->data->list.cell, sizeof(zval*) * val->data->list.count);
+	val->data->list->cell = realloc(val->data->list->cell, sizeof(zval*) * val->data->list->count);
 
 	return x;
 }
@@ -227,8 +231,8 @@ zval* zval_pick(zval* val, int i) {
 zval* builtin_operators(zval* val, char* o) {
 
 	// first ensuring all arguments are numbers
-	for(int i = 0; i < val->data->list.count; i ++ ){
-		if (val->data->list.cell[i]->type != ZVAL_NUMBER ) {
+	for(int i = 0; i < val->data->list->count; i ++ ){
+		if (val->data->list->cell[i]->type != ZVAL_NUMBER ) {
 			zval_delete(val);
 			return zval_error("Cannot operate on a non-number !!");
 		}
@@ -238,12 +242,12 @@ zval* builtin_operators(zval* val, char* o) {
 	zval* x = zval_pop(val, 0);
 
 	// if no arguments and a "sub" or a "-" then performing a unary negation
-	if((strcmp(o, "-") == 0 || strcmp(o, "sub") == 0 ) && val->data->list.count == 0) {
+	if((strcmp(o, "-") == 0 || strcmp(o, "sub") == 0 ) && val->data->list->count == 0) {
 		x->data->number = - x->data->number;
 	}
 
 	// while there are still elements remaining
-	while(val->data->list.count > 0) {
+	while(val->data->list->count > 0) {
 
 		// popping the next element
 		zval *y = zval_pop(val, 0);
@@ -289,20 +293,20 @@ zval* zval_evaluate(zval* val);
 zval* zval_evaluate_sym_expression (zval* val) {
 
 	//evalualtion of the children
-	for ( int i = 0; i < val->data->list.count; i++ ){
-		val->data->list.cell[i] = zval_evaluate(val->data->list.cell[i]);
+	for ( int i = 0; i < val->data->list->count; i++ ){
+		val->data->list->cell[i] = zval_evaluate(val->data->list->cell[i]);
 	}
 
 	// checking for errors 
-	for (int i = 0; i < val->data->list.count; i++ ){
-		if (val->data->list.cell[i]->type == ZVAL_ERROR ) { return zval_pick(val, i); }
+	for (int i = 0; i < val->data->list->count; i++ ){
+		if (val->data->list->cell[i]->type == ZVAL_ERROR ) { return zval_pick(val, i); }
 	}
 
 	// if getting an empty expression
-	if (val->data->list.count == 0) { return val; }
+	if (val->data->list->count == 0) { return val; }
 
 	// if getting a single expression
-	if (val->data->list.count == 1) { return zval_pick(val, 0); }
+	if (val->data->list->count == 1) { return zval_pick(val, 0); }
 
 	// ensuring first element is a symbol
 	zval* first_element = zval_pop(val, 0);
