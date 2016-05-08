@@ -386,7 +386,7 @@ int main(int argc, char** argv) {
 			mpc_ast_print(result.output);
 			printf("\n\nTotal number of nodes: %i\n\n", number_of_nodes(result.output)); 
 			
-			//Print the the recieved input
+			//Print the the received input
 			printf("Received input: ");
 			zval* received = zval_read(result.output);
 			zval_println(received);
