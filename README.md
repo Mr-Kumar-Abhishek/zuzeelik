@@ -59,7 +59,7 @@ Currently, it supports following symbolic and textual operators:
 ##### Examples:
 * input: 
  ```
- zuzeelik> + 4 ( / 4 2)
+zuzeelik> % 5.4 3
  ```
  
 * output:
@@ -68,20 +68,16 @@ Abstract Syntax Tree:
 
 > 
   regex 
-  expression|symbol|char:1:2 '+'
-  expression|number|regex:1:4 '4'
-  sym_expression|> 
-    char:1:6 '('
-    expression|symbol|char:1:8 '/'
-    expression|number|regex:1:10 '4'
-    expression|number|regex:1:12 '2'
-    char:1:13 ')'
+  expression|symbol|char:1:1 '%'
+  expression|number|regex:1:3 '5.4'
+  expression|number|regex:1:7 '3'
   regex 
 
 
-Total number of nodes: 11
+Total number of nodes: 6
 
-Received input: (+ 4 (/ 4 2))
-Evaluated output: 6
+Received input: (% 5.400000 3.000000)
+Evaluated output: 2.400000
+
 
 ```
