@@ -47,7 +47,7 @@ typedef struct zlist {
 
 // Declaring new zdata union
 typedef union zdata {
-	long number;
+	long double number;
 
 	// error and symbol types has some string data 
 	char* er;
@@ -74,7 +74,7 @@ zval* zval_create(int zval_type) {
 }
 
 // constructing a pointer to a new number zval 
-zval* zval_number(long x) {
+zval* zval_number(long double x) {
 	zval* val = zval_create(ZVAL_NUMBER);
 	val->data->number = x;
 	return val;
@@ -145,7 +145,7 @@ zval* zval_increase(zval* val, zval* x){
 
 zval* zval_read_number(mpc_ast_t* node) {
 	errno = 0;
-	long x = strtol(node->contents, NULL, 0);
+	long double x = strtold(node->contents, NULL);
 	return errno != ERANGE ? zval_number(x) : zval_error( "Invalid number !");
 }
 
@@ -191,7 +191,7 @@ void zval_expression_print(zval* val, char start, char end) {
 void zval_print(zval* val) {
 	switch(val->type) {
 
-		case ZVAL_NUMBER: printf("%li", val->data->number); break;
+		case ZVAL_NUMBER: printf("%Lf", val->data->number); break;
 		case ZVAL_ERROR: printf("[error]\nError response: %s", val->data->er); break;
 		case ZVAL_SYMBOL: printf("%s", val->data->sy); break;
 		case ZVAL_SYM_EXRESSION: zval_expression_print(val, '(', ')'); break;
@@ -271,7 +271,7 @@ zval* builtin_operators(zval* val, char* o) {
 				zval_delete(x); zval_delete(y);
 				x = zval_error("Modulo by zero !! ??"); break;
 			}
-			x->data->number %= y->data->number;
+			x->data->number = fmod(x->data->number, y->data->number);
 		}
 		if ( strcmp(o, "^") == 0 || strcmp(o, "pow") == 0 ) {
 			x->data->number = pow(x->data->number, y->data->number); 
