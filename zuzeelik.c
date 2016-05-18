@@ -24,9 +24,14 @@
 
 	#include <editline/readline.h>
 
-	// if not not OS X then include header file below
-	#ifndef __APPLE__
-		#include <editline/history.h>
+	// if OS X then include header file below
+	#ifdef __APPLE__
+		#include <AvailabilityMacros.h>
+
+		// if MAC OS X version doesn't falls into this then include <editline/history.h>
+		#if !(MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_8)
+			#include <editline/history.h>
+		#endif
 	#endif
 
 #endif
