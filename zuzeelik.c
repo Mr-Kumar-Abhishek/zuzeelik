@@ -246,6 +246,34 @@ zval* zval_pick(zval* val, int i) {
 	return x;
 }
 
+// builtin function head for quotes
+zval* builtin_head(zval* node){
+
+	// checking for error conditions
+	if( node->data->list->count != 1 ) {
+		zval_delete(node);
+		return zval_error("Function 'head' received too many arguments !");
+	}
+
+	if( node->data->list->cell[0]->type != ZVAL_QUOTER ) {
+		zval_delete(node);
+		return zval_error("Function 'head' received incorrect types !");
+	}
+
+	if ( node->data->list->cell[0]->data->list->count == 0 ) {
+		zval_delete(node);
+		return zval_error("Function 'head' passed [] !");
+	}
+
+	// otherwise taking the first argument
+	zval* val = zval_pick(node, 0);
+
+	// delete all the arguments that are not head and return
+	while(val->data->list->count > 1) { zval_delete( zval_pop( val, 1 ) ); }
+	return val;
+
+}
+
 // using operator string to see which operation to perform
 zval* builtin_operators(zval* val, char* o) {
 
@@ -306,6 +334,20 @@ zval* builtin_operators(zval* val, char* o) {
 	zval_delete(val); return x;
 }
 
+// builtin lookup for functions 
+zval* builtin_lookup (zval* node, char* fn){
+	if( strcmp("head", fn) == 0 ) { return builtin_head(node); }
+	if( strstr("+-/*%^", fn) ||
+		strcmp("add", fn) == 0 || strcmp("sub", fn ) == 0 || 
+		strcmp("mul", fn) == 0 || strcmp("div", fn ) == 0 || 
+		strcmp("mod", fn) == 0 || strcmp("pow", fn ) == 0 || 
+		strcmp("min", fn) == 0 || strcmp("max", fn ) == 0 ){
+			return builtin_operators(node, fn);
+		}
+	zval_delete(node);
+	return zval_error("Unknown function !!");
+}
+
 // forward declatation of zval_evaluate() used in zval_evaluate_sym_expression()
 zval* zval_evaluate(zval* val);
 
@@ -334,8 +376,8 @@ zval* zval_evaluate_sym_expression (zval* val) {
 		return zval_error("sym-expression is not starting with a symbol !!");
 	}
 
-	// calling builtin operators
-	zval* r = builtin_operators(val, first_element->data->sy);
+	// calling builtin lookups
+	zval* r = builtin_lookup(val, first_element->data->sy);
 	return r;
 }
 
@@ -377,7 +419,8 @@ int main(int argc, char** argv) {
 		"                                                                                                      \
 			number 	       : /-?[0-9]+(\\.[0-9]*)?/	;                                                          \
 			symbol         : '+' | '-' | '*' | '/' | '%' | '^' |                                               \
-			                \"add\" | \"sub\" | \"mul\" | \"div\" | \"mod\" | \"max\" | \"min\"  | \"pow\"  ;  \
+			                \"add\" | \"sub\" | \"mul\" | \"div\" | \"mod\" | \"max\" | \"min\"  | \"pow\"  |  \
+			                \"head\"                                                                        ;  \
 			sym_expression : '(' <expression>* ')' ;                                                           \
 			quoter         : '[' <expression>* ']' ;                                                           \
 			expression     : <number> | <symbol> | <sym_expression> | <quoter> ;                               \
