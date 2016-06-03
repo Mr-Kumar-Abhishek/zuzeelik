@@ -37,7 +37,7 @@
 #endif
 
 // creating enumeration of possible zval types 
-enum { ZVAL_NUMBER, ZVAL_ERROR, ZVAL_SYMBOL, ZVAL_SYM_EXRESSION, ZVAL_QUOTER };
+enum { ZVAL_NUMBER, ZVAL_ERROR, ZVAL_SYMBOL, ZVAL_SYM_EXRESSION, ZVAL_QUOTE };
 
 
 // declaring new zlist struct
@@ -111,8 +111,8 @@ zval* zval_sym_expression(void) {
 }
 
 // constructing a pointer to new empty quoter
-zval* zval_quoter(void) {
-	zval* val = zval_create(ZVAL_QUOTER);
+zval* zval_quote(void) {
+	zval* val = zval_create(ZVAL_QUOTE);
 	val->data->list = malloc(sizeof(zlist));
 	val->data->list->count = 0;
 	val->data->list->cell = NULL;
@@ -129,8 +129,8 @@ void zval_delete(zval* val) {
 		case ZVAL_ERROR:  free(val->data->er); break;
 		case ZVAL_SYMBOL: free(val->data->sy); break;
 
-		// if symbolic expression or quoter zval then delete all the elements inside 
-		case ZVAL_QUOTER:
+		// if symbolic expression or quote zval then delete all the elements inside 
+		case ZVAL_QUOTE:
 		case ZVAL_SYM_EXRESSION: 
 			for( int i = 0; i < val->data->list->count; i++ ) {
 				zval_delete(val->data->list->cell[i]);
@@ -174,7 +174,7 @@ zval* zval_read(mpc_ast_t* node) {
 	zval* x = NULL;
 	if(strcmp(node->tag, ">") == 0 ) { x = zval_sym_expression(); }
 	if(strstr(node->tag, "sym_expression")) { x = zval_sym_expression(); }
-	if(strstr(node->tag, "quoter")) { x = zval_quoter(); }
+	if(strstr(node->tag, "quote")) { x = zval_quote(); }
 
 	// Filling this list with valid expressions contained within
 	for(int i = 0; i < node->children_num; i ++) {
@@ -213,7 +213,7 @@ void zval_print(zval* val) {
 		case ZVAL_ERROR: printf("[error]\nError response: %s", val->data->er); break;
 		case ZVAL_SYMBOL: printf("%s", val->data->sy); break;
 		case ZVAL_SYM_EXRESSION: zval_expression_print(val, '(', ')'); break;
-		case ZVAL_QUOTER: zval_expression_print(val, '[', ']'); break;
+		case ZVAL_QUOTE: zval_expression_print(val, '[', ']'); break;
 	}
 }
 
@@ -255,7 +255,7 @@ zval* builtin_head(zval* node){
 		return zval_error("Function 'head' received too many arguments !");
 	}
 
-	if( node->data->list->cell[0]->type != ZVAL_QUOTER ) {
+	if( node->data->list->cell[0]->type != ZVAL_QUOTE ) {
 		zval_delete(node);
 		return zval_error("Function 'head' received incorrect types !");
 	}
@@ -410,23 +410,23 @@ int main(int argc, char** argv) {
 	mpc_parser_t* Number = mpc_new("number");
 	mpc_parser_t* Symbol = mpc_new("symbol");
 	mpc_parser_t* Sym_expression = mpc_new("sym_expression");
-	mpc_parser_t* Quoter = mpc_new("quoter");
+	mpc_parser_t* Quote = mpc_new("quote");
 	mpc_parser_t* Expression = mpc_new("expression");
 	mpc_parser_t* Zuzeelik = mpc_new("zuzeelik");
 
 	// defining them with following language 
 	mpca_lang(MPCA_LANG_DEFAULT,
-		"                                                                                                      \
+		"                                                                                                          \
 			number 	       : /-?[0-9]+(\\.[0-9]*)?/	;                                                          \
 			symbol         : '+' | '-' | '*' | '/' | '%' | '^' |                                               \
 			                \"add\" | \"sub\" | \"mul\" | \"div\" | \"mod\" | \"max\" | \"min\"  | \"pow\"  |  \
 			                \"head\"                                                                        ;  \
 			sym_expression : '(' <expression>* ')' ;                                                           \
-			quoter         : '[' <expression>* ']' ;                                                           \
-			expression     : <number> | <symbol> | <sym_expression> | <quoter> ;                               \
+			quote         : '[' <expression>* ']' ;                                                            \
+			expression     : <number> | <symbol> | <sym_expression> | <quote> ;                                \
 			zuzeelik       : /^/ <expression>* /$/ ;                                                           \
 		",
-	Number, Symbol, Sym_expression, Quoter, Expression, Zuzeelik);
+	Number, Symbol, Sym_expression, Quote, Expression, Zuzeelik);
 
 
 	puts("zuzeelik [ version: v0.0.0-0.4.2 ] \n");
@@ -474,6 +474,6 @@ int main(int argc, char** argv) {
 	}
 
 	// undefining and deleting parsers 
-	mpc_cleanup(6, Number, Symbol, Sym_expression, Quoter, Expression, Zuzeelik);
+	mpc_cleanup(6, Number, Symbol, Sym_expression, Quote, Expression, Zuzeelik);
 	return 0;
 }
