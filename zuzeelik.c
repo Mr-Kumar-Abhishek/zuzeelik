@@ -274,6 +274,34 @@ zval* builtin_head(zval* node){
 
 }
 
+// builtin function tail for quotes
+zval * builtin_tail(zval* node){
+
+	// checking for error conditions
+	if ( node->data->list->count != 1 ) {
+		zval_delete(node);
+		return zval_error("Function 'tail' received too many arguments !");
+	}
+
+	if( node->data->list->cell[0]->type != ZVAL_QUOTE ) {
+		zval_delete(node);
+		return zval_error("Function 'tail' received incorrect types !");
+	}
+
+	if ( node->data->list->cell[0]->data->list->count == 0 ) {
+		zval_delete(node);
+		return zval_error("Function 'tail' passed [] !");
+	}
+
+	// otherwise taking the first argument
+	zval* val = zval_pick(node, 0);
+
+	// delete first element and return
+	zval_delete(zval_pop(val, 0));
+	return val;
+
+}
+
 // using operator string to see which operation to perform
 zval* builtin_operators(zval* val, char* o) {
 
@@ -337,6 +365,7 @@ zval* builtin_operators(zval* val, char* o) {
 // builtin lookup for functions 
 zval* builtin_lookup (zval* node, char* fn){
 	if( strcmp("head", fn) == 0 ) { return builtin_head(node); }
+	if( strcmp("tail", fn) == 0 ) { return builtin_tail(node); }
 	if( strstr("+-/*%^", fn) ||
 		strcmp("add", fn) == 0 || strcmp("sub", fn ) == 0 || 
 		strcmp("mul", fn) == 0 || strcmp("div", fn ) == 0 || 
@@ -420,9 +449,9 @@ int main(int argc, char** argv) {
 			number 	       : /-?[0-9]+(\\.[0-9]*)?/	;                                                          \
 			symbol         : '+' | '-' | '*' | '/' | '%' | '^' |                                               \
 			                \"add\" | \"sub\" | \"mul\" | \"div\" | \"mod\" | \"max\" | \"min\"  | \"pow\"  |  \
-			                \"head\"                                                                        ;  \
+			                \"head\" | \"tail\"                                                             ;  \
 			sym_expression : '(' <expression>* ')' ;                                                           \
-			quote         : '[' <expression>* ']' ;                                                            \
+			quote          : '[' <expression>* ']' ;                                                           \
 			expression     : <number> | <symbol> | <sym_expression> | <quote> ;                                \
 			zuzeelik       : /^/ <expression>* /$/ ;                                                           \
 		",
