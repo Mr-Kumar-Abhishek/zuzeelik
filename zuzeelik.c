@@ -250,6 +250,12 @@ zval* zval_pick(zval* val, int i) {
 #define QFC(args, cond, err ) \
 	if( cond ) {zval_delete(args); zval_error(err); }
 
+// builtin function 'list'.
+zval* builtin_zlist(zval* val) {
+	val->type = ZVAL_QUOTE;
+	return val;
+}
+
 // builtin function head for quotes
 zval* builtin_head(zval* node){
 
@@ -348,6 +354,7 @@ zval* builtin_operators(zval* val, char* o) {
 zval* builtin_lookup (zval* node, char* fn){
 	if( strcmp("head", fn) == 0 ) { return builtin_head(node); }
 	if( strcmp("tail", fn) == 0 ) { return builtin_tail(node); }
+	if( strcmp("list", fn) == 0 ) { return builtin_zlist(node); }
 	if( strstr("+-/*%^", fn) ||
 		strcmp("add", fn) == 0 || strcmp("sub", fn ) == 0 || 
 		strcmp("mul", fn) == 0 || strcmp("div", fn ) == 0 || 
@@ -431,7 +438,7 @@ int main(int argc, char** argv) {
 			number 	       : /-?[0-9]+(\\.[0-9]*)?/	;                                                          \
 			symbol         : '+' | '-' | '*' | '/' | '%' | '^' |                                               \
 			                \"add\" | \"sub\" | \"mul\" | \"div\" | \"mod\" | \"max\" | \"min\"  | \"pow\"  |  \
-			                \"head\" | \"tail\"                                                             ;  \
+			                \"head\" | \"tail\" | \"list\"                                                  ;  \
 			sym_expression : '(' <expression>* ')' ;                                                           \
 			quote          : '[' <expression>* ']' ;                                                           \
 			expression     : <number> | <symbol> | <sym_expression> | <quote> ;                                \
