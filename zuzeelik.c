@@ -246,24 +246,17 @@ zval* zval_pick(zval* val, int i) {
 	return x;
 }
 
+// defining QFC ( quote format checker )
+#define QFC(args, cond, err ) \
+	if( cond ) {zval_delete(args); zval_error(err); }
+
 // builtin function head for quotes
 zval* builtin_head(zval* node){
 
 	// checking for error conditions
-	if( node->data->list->count != 1 ) {
-		zval_delete(node);
-		return zval_error("Function 'head' received too many arguments !");
-	}
-
-	if( node->data->list->cell[0]->type != ZVAL_QUOTE ) {
-		zval_delete(node);
-		return zval_error("Function 'head' received incorrect types !");
-	}
-
-	if ( node->data->list->cell[0]->data->list->count == 0 ) {
-		zval_delete(node);
-		return zval_error("Function 'head' passed [] !");
-	}
+	QFC(node, node->data->list->count != 1, "Function 'head' received too many arguments !" );
+	QFC(node, node->data->list->cell[0]->type != ZVAL_QUOTE, "Function 'head received incorrect types !" );
+	QFC(node, node->data->list->cell[0]->data->list->count == 0, "Function 'head' passed [] !" );
 
 	// otherwise taking the first argument
 	zval* val = zval_pick(node, 0);
@@ -278,20 +271,9 @@ zval* builtin_head(zval* node){
 zval * builtin_tail(zval* node){
 
 	// checking for error conditions
-	if ( node->data->list->count != 1 ) {
-		zval_delete(node);
-		return zval_error("Function 'tail' received too many arguments !");
-	}
-
-	if( node->data->list->cell[0]->type != ZVAL_QUOTE ) {
-		zval_delete(node);
-		return zval_error("Function 'tail' received incorrect types !");
-	}
-
-	if ( node->data->list->cell[0]->data->list->count == 0 ) {
-		zval_delete(node);
-		return zval_error("Function 'tail' passed [] !");
-	}
+	QFC(node, node->data->list->count != 1, "Function 'tail' received too many arguments ! ");
+	QFC(node, node->data->list->cell[0]->type != ZVAL_QUOTE, "Function 'tail' received incorrect types !" );
+	QFC(node, node->data->list->cell[0]->data->list->count == 0, "Function 'tail' passed [] ! ");
 
 	// otherwise taking the first argument
 	zval* val = zval_pick(node, 0);
