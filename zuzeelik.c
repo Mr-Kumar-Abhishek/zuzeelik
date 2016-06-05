@@ -229,7 +229,7 @@ zval* zval_pop (zval* val, int i) {
 	zval* x  = val->data->list->cell[i];
 
 	// shifting memory after the item at "i" over the top
-	memmove(&val->data->list->cell[i], &val->data->list->cell[i+1], sizeof(zval*) * val->data->list->count - i - 1);
+	memmove(&val->data->list->cell[i], &val->data->list->cell[i+1], sizeof(zval*) * (val->data->list->count - i - 1));
 
 	// decreasing the count of items in the list
 	val->data->list->count--;
