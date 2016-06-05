@@ -56,7 +56,28 @@ Currently, it supports following symbolic and textual operators:
 |         min           |                          |    `( min 23 34 55)` 
 |         pow           |        `( ^ 4 3 )`       |      `( pow 4 3 )`  
 
-##### Examples:
+#### Built-in Functions:
+
+With *sym-expressions* Zuzeelik now also uses *quotes*. *Quotes* are very similar in respect to *sym-expressions*, but unlike *sym-expressions* , *quotes* are enclosed in `[]` rather than `()`. Also, none of the symbolic or textual operators are
+evaluated which are in *quotes*. *Quotes* comes up with following built-in functions:
+
+|   Function Name   |            Syntax       
+|:-----------------:|:------------------------------:
+|       `list`      |   `list 2 3`                   
+|       `head`      |   `head [ 2 3 4 5 ]`           
+|       `tail`      |   `tail [ 343 23 5 343]`       
+|       `join`      |   `join [ 12 23 ] [ 23 43 ]`   
+|       `eval`      |   `eval [ + 34 22 ]`          
+
+##### Definitions
+
+* `list` : *list* takes one or more arguments and returns a new *quote* containing the arguments.
+* `head` : *head* takes a *quote* and returns a *quote* with only the first element.
+* `tail` : *tail* takes a *quote* and returns a *quote* with the first element removed.
+* `join` : *join* takes one or more *quotes* and returns a *quote* of them conjoined together.
+* `eval` : *eval* takes a *quote* and evaluates it as it were a *sym-expression*.
+
+#### Examples:
 * input: 
  ```
 zuzeelik> % 5.4 3
