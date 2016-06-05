@@ -246,6 +246,18 @@ zval* zval_pick(zval* val, int i) {
 	return x;
 }
 
+zval* zval_join(zval* x, zval* y){
+	
+	// for each cell in 'y' add it to 'x'
+	while( y->data->list->count ) {
+		x = zval_increase(x, zval_pop(y, 0));
+	}
+
+	// delete the empty 'y' and return 'x'
+	zval_delete(y);
+	return x;
+}
+
 // forward declatation of zval_evaluate() used in zval_evaluate_sym_expression() and builtin_eval()
 zval* zval_evaluate(zval* val);
 
@@ -269,7 +281,7 @@ zval* builtin_eval(zval* node){
 	return zval_evaluate(val);
 }
 
-// builtin function head for quotes
+// builtin function 'head' for quotes
 zval* builtin_head(zval* node){
 
 	// checking for error conditions
@@ -286,12 +298,12 @@ zval* builtin_head(zval* node){
 
 }
 
-// builtin function tail for quotes
+// builtin function 'tail' for quotes
 zval * builtin_tail(zval* node){
 
 	// checking for error conditions
 	QFC(node, node->data->list->count != 1, "Function 'tail' received too many arguments ! ");
-	QFC(node, node->data->list->cell[0]->type != ZVAL_QUOTE, "Function 'tail' received incorrect types !" );
+	QFC(node, node->data->list->cell[0]->type != ZVAL_QUOTE, "Function 'tail' received incorrect types ! " );
 	QFC(node, node->data->list->cell[0]->data->list->count == 0, "Function 'tail' passed [] ! ");
 
 	// otherwise taking the first argument
@@ -301,6 +313,20 @@ zval * builtin_tail(zval* node){
 	zval_delete(zval_pop(val, 0));
 	return val;
 
+}
+
+// builtin function 'join' for quotes
+zval* builtin_join(zval* node) {
+	for(int i = 0; i < node->data->list->count; i++ ){
+		QFC(node, node->data->list->cell[i]->type != ZVAL_QUOTE, "Function 'join' passed incorrect types !");
+	}
+
+	zval*val = zval_pop(node, 0);
+
+	while(node->data->list->count){ val = zval_join(val, zval_pop(node, 0)); }
+
+	zval_delete(node);
+	return val;
 }
 
 // using operator string to see which operation to perform
@@ -369,6 +395,7 @@ zval* builtin_lookup (zval* node, char* fn){
 	if( strcmp("tail", fn) == 0 ) { return builtin_tail(node); }
 	if( strcmp("list", fn) == 0 ) { return builtin_zlist(node); }
 	if( strcmp("eval", fn) == 0 ) { return builtin_eval(node); }
+	if( strcmp("join", fn) == 0 ) { return builtin_join(node); }
 	if( strstr("+-/*%^", fn) ||
 		strcmp("add", fn) == 0 || strcmp("sub", fn ) == 0 || 
 		strcmp("mul", fn) == 0 || strcmp("div", fn ) == 0 || 
@@ -449,7 +476,7 @@ int main(int argc, char** argv) {
 			number 	       : /-?[0-9]+(\\.[0-9]*)?/	;                                                          \
 			symbol         : '+' | '-' | '*' | '/' | '%' | '^' |                                               \
 			                \"add\" | \"sub\" | \"mul\" | \"div\" | \"mod\" | \"max\" | \"min\"  | \"pow\"  |  \
-			                \"head\" | \"tail\" | \"list\" | \"eval\"                                       ;  \
+			                \"head\" | \"tail\" | \"list\" | \"eval\" | \"join\"                            ;  \
 			sym_expression : '(' <expression>* ')' ;                                                           \
 			quote          : '[' <expression>* ']' ;                                                           \
 			expression     : <number> | <symbol> | <sym_expression> | <quote> ;                                \
