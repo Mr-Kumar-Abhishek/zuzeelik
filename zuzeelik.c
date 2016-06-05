@@ -246,6 +246,9 @@ zval* zval_pick(zval* val, int i) {
 	return x;
 }
 
+// forward declatation of zval_evaluate() used in zval_evaluate_sym_expression() and builtin_eval()
+zval* zval_evaluate(zval* val);
+
 // defining QFC ( quote format checker )
 #define QFC(args, cond, err ) \
 	if( cond ) {zval_delete(args); zval_error(err); }
@@ -254,6 +257,16 @@ zval* zval_pick(zval* val, int i) {
 zval* builtin_zlist(zval* val) {
 	val->type = ZVAL_QUOTE;
 	return val;
+}
+
+// builtin function 'eval'
+zval* builtin_eval(zval* node){
+	QFC(node, node->data->list->count != 1, "Function 'eval' received too many arguments !");
+	QFC(node, node->data->list->cell[0]->type != ZVAL_QUOTE, "Function 'eval' received incorrect types !");
+
+	zval* val = zval_pick(node, 0);
+	val->type = ZVAL_SYM_EXRESSION;
+	return zval_evaluate(val);
 }
 
 // builtin function head for quotes
@@ -355,6 +368,7 @@ zval* builtin_lookup (zval* node, char* fn){
 	if( strcmp("head", fn) == 0 ) { return builtin_head(node); }
 	if( strcmp("tail", fn) == 0 ) { return builtin_tail(node); }
 	if( strcmp("list", fn) == 0 ) { return builtin_zlist(node); }
+	if( strcmp("eval", fn) == 0 ) { return builtin_eval(node); }
 	if( strstr("+-/*%^", fn) ||
 		strcmp("add", fn) == 0 || strcmp("sub", fn ) == 0 || 
 		strcmp("mul", fn) == 0 || strcmp("div", fn ) == 0 || 
@@ -365,9 +379,6 @@ zval* builtin_lookup (zval* node, char* fn){
 	zval_delete(node);
 	return zval_error("Unknown function !!");
 }
-
-// forward declatation of zval_evaluate() used in zval_evaluate_sym_expression()
-zval* zval_evaluate(zval* val);
 
 zval* zval_evaluate_sym_expression (zval* val) {
 
@@ -438,7 +449,7 @@ int main(int argc, char** argv) {
 			number 	       : /-?[0-9]+(\\.[0-9]*)?/	;                                                          \
 			symbol         : '+' | '-' | '*' | '/' | '%' | '^' |                                               \
 			                \"add\" | \"sub\" | \"mul\" | \"div\" | \"mod\" | \"max\" | \"min\"  | \"pow\"  |  \
-			                \"head\" | \"tail\" | \"list\"                                                  ;  \
+			                \"head\" | \"tail\" | \"list\" | \"eval\"                                       ;  \
 			sym_expression : '(' <expression>* ')' ;                                                           \
 			quote          : '[' <expression>* ']' ;                                                           \
 			expression     : <number> | <symbol> | <sym_expression> | <quote> ;                                \
