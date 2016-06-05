@@ -261,7 +261,7 @@ zval* builtin_head(zval* node){
 
 	// checking for error conditions
 	QFC(node, node->data->list->count != 1, "Function 'head' received too many arguments !" );
-	QFC(node, node->data->list->cell[0]->type != ZVAL_QUOTE, "Function 'head received incorrect types !" );
+	QFC(node, node->data->list->cell[0]->type != ZVAL_QUOTE, "Function 'head' received incorrect types !" );
 	QFC(node, node->data->list->cell[0]->data->list->count == 0, "Function 'head' passed [] !" );
 
 	// otherwise taking the first argument
