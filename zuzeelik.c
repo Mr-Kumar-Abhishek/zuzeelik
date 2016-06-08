@@ -110,7 +110,7 @@ zval* zval_sym_expression(void) {
 	return val;
 }
 
-// constructing a pointer to new empty quoter
+// constructing a pointer to new empty quote
 zval* zval_quote(void) {
 	zval* val = zval_create(ZVAL_QUOTE);
 	val->data->list = malloc(sizeof(zlist));
