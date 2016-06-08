@@ -266,7 +266,7 @@ zval* zval_evaluate(zval* val);
 	if( cond ) {zval_delete(args); zval_error(err); }
 
 // builtin function 'list'.
-zval* builtin_zlist(zval* val) {
+zval* builtin_list(zval* val) {
 	val->type = ZVAL_QUOTE;
 	return val;
 }
@@ -393,7 +393,7 @@ zval* builtin_operators(zval* val, char* o) {
 zval* builtin_lookup (zval* node, char* fn){
 	if( strcmp("head", fn) == 0 ) { return builtin_head(node); }
 	if( strcmp("tail", fn) == 0 ) { return builtin_tail(node); }
-	if( strcmp("list", fn) == 0 ) { return builtin_zlist(node); }
+	if( strcmp("list", fn) == 0 ) { return builtin_list(node); }
 	if( strcmp("eval", fn) == 0 ) { return builtin_eval(node); }
 	if( strcmp("join", fn) == 0 ) { return builtin_join(node); }
 	if( strstr("+-/*%^", fn) ||
