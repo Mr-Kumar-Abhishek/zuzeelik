@@ -84,10 +84,13 @@ zval* zval_create(int zval_type) {
 	return val;
 }
 
+// defining ZVAL_NUM
+#define ZVAL_NUM(v) v->data->number
+
 // constructing a pointer to a new number zval 
 zval* zval_number(long double x) {
 	zval* val = zval_create(ZVAL_NUMBER);
-	val->data->number = x;
+	ZVAL_NUM(val) = x;
 	return val;
 }
 
@@ -215,7 +218,7 @@ void zval_expression_print(zval* val, char start, char end) {
 void zval_print(zval* val) {
 	switch(val->type) {
 
-		case ZVAL_NUMBER: printf("%Lf", val->data->number); break;
+		case ZVAL_NUMBER: printf("%Lf", ZVAL_NUM(val)); break;
 		case ZVAL_ERROR: printf("[error]\nError response: %s", val->data->er); break;
 		case ZVAL_SYMBOL: printf("%s", val->data->sy); break;
 		case ZVAL_SYM_EXRESSION: zval_expression_print(val, '(', ')'); break;
@@ -351,7 +354,7 @@ zval* builtin_operators(zval* val, char* o) {
 
 	// if no arguments and a "sub" or a "-" then performing a unary negation
 	if((strcmp(o, "-") == 0 || strcmp(o, "sub") == 0 ) && val->data->list->count == 0) {
-		x->data->number = - x->data->number;
+		ZVAL_NUM(x) = - ZVAL_NUM(x);
 	}
 
 	// while there are still elements remaining
@@ -360,35 +363,35 @@ zval* builtin_operators(zval* val, char* o) {
 		// popping the next element
 		zval *y = zval_pop(val, 0);
 
-		if (strcmp(o, "+") == 0 || strcmp(o, "add") == 0 ) { x->data->number += y->data->number; }
-		if (strcmp(o, "-") == 0 || strcmp(o, "sub") == 0 ) { x->data->number -= y->data->number; }
-		if (strcmp(o, "*") == 0 || strcmp(o, "mul") == 0 ) { x->data->number *= y->data->number; }
+		if (strcmp(o, "+") == 0 || strcmp(o, "add") == 0 ) { ZVAL_NUM(x) += ZVAL_NUM(y); }
+		if (strcmp(o, "-") == 0 || strcmp(o, "sub") == 0 ) { ZVAL_NUM(x) -= ZVAL_NUM(y); }
+		if (strcmp(o, "*") == 0 || strcmp(o, "mul") == 0 ) { ZVAL_NUM(x) *= ZVAL_NUM(y); }
 		if (strcmp(o, "/") == 0 || strcmp(o, "div") == 0 ) {
 
 			// if the second operand is zero then returning an error and breaking out
-			if( y->data->number == 0 ){
+			if( ZVAL_NUM(y) == 0 ){
 				zval_delete(x); zval_delete(y);
 				x = zval_error("Division by zero !!??"); break;
 			}
-			x->data->number /= y->data->number; 
+			ZVAL_NUM(x) /= ZVAL_NUM(y); 
 		}
 		if ( strcmp(o, "%") == 0 || strcmp(o, "mod") == 0 ) {
 
 			// Again, if the second operand is zero then returning an error and breaking out
-			if( y->data->number == 0 ){
+			if( ZVAL_NUM(y) == 0 ){
 				zval_delete(x); zval_delete(y);
 				x = zval_error("Modulo by zero !! ??"); break;
 			}
-			x->data->number = fmod(x->data->number, y->data->number);
+			ZVAL_NUM(x) = fmod(ZVAL_NUM(x), ZVAL_NUM(y));
 		}
 		if ( strcmp(o, "^") == 0 || strcmp(o, "pow") == 0 ) {
-			x->data->number = pow(x->data->number, y->data->number); 
+			ZVAL_NUM(x) = pow(ZVAL_NUM(x), ZVAL_NUM(y)); 
 		}
 		if ( strcmp(o, "max") == 0) { 
-			if( x->data->number < y->data->number ) { x->data->number = y->data->number; }
+			if( ZVAL_NUM(x) < ZVAL_NUM(y) ) { ZVAL_NUM(x) = ZVAL_NUM(y); }
 		}
 		if ( strcmp(o, "min") == 0 ) {
-			if ( y->data->number < x->data->number ) { x->data->number = y->data->number;}
+			if ( ZVAL_NUM(y) < ZVAL_NUM(x) ) { ZVAL_NUM(x) = ZVAL_NUM(y);}
 		}
 		zval_delete(y);
 	}
