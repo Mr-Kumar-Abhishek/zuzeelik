@@ -119,11 +119,14 @@ zval* zval_symbol(char* sym){
 // defining ZVAL_LIST
 #define ZVAL_LIST(v) v->data->list
 
+// defining ZVAL_COUNT
+#define ZVAL_COUNT(v) v->data->list->count
+
 // constructing a pointer to new empty symbolic expressions 
 zval* zval_sym_expression(void) {
 	zval* val = zval_create(ZVAL_SYM_EXRESSION);
 	ZVAL_LIST(val) = malloc(sizeof(zlist));
-	val->data->list->count = 0;
+	ZVAL_COUNT(val) = 0;
 	val->data->list->cell = NULL;
 	return val;
 }
@@ -132,7 +135,7 @@ zval* zval_sym_expression(void) {
 zval* zval_quote(void) {
 	zval* val = zval_create(ZVAL_QUOTE);
 	ZVAL_LIST(val) = malloc(sizeof(zlist));
-	val->data->list->count = 0;
+	ZVAL_COUNT(val) = 0;
 	val->data->list->cell = NULL;
 	return val;
 }
@@ -150,7 +153,7 @@ void zval_delete(zval* val) {
 		// if symbolic expression or quote zval then delete all the elements inside 
 		case ZVAL_QUOTE:
 		case ZVAL_SYM_EXRESSION: 
-			for( int i = 0; i < val->data->list->count; i++ ) {
+			for( int i = 0; i < ZVAL_COUNT(val); i++ ) {
 				zval_delete(val->data->list->cell[i]);
 			}
 
@@ -170,9 +173,9 @@ void zval_delete(zval* val) {
 }
 
 zval* zval_increase(zval* val, zval* x){
-	val->data->list->count++;
-	val->data->list->cell =  realloc(val->data->list->cell, sizeof(zval*) * val->data->list->count);
-	val->data->list->cell[val->data->list->count - 1] = x;
+	ZVAL_COUNT(val)++;
+	val->data->list->cell =  realloc(val->data->list->cell, sizeof(zval*) * ZVAL_COUNT(val));
+	val->data->list->cell[ZVAL_COUNT(val) - 1] = x;
 	return val;
 }
 
@@ -211,12 +214,12 @@ void zval_print(zval* val);
 
 void zval_expression_print(zval* val, char start, char end) {
 	putchar(start);
-	for(int i = 0; i < val->data->list->count; i ++) {
+	for(int i = 0; i < ZVAL_COUNT(val); i ++) {
 		// print the value contained within 
 		zval_print(val->data->list->cell[i]);
 
 		// don't print the trailing space if it is the last element
-		if(i != val->data->list->count -1){
+		if(i != ZVAL_COUNT(val) -1){
 			putchar(' ');
 		}
 	}
@@ -247,13 +250,13 @@ zval* zval_pop (zval* val, int i) {
 	zval* x  = val->data->list->cell[i];
 
 	// shifting memory after the item at "i" over the top
-	memmove(&val->data->list->cell[i], &val->data->list->cell[i+1], sizeof(zval*) * (val->data->list->count - i - 1));
+	memmove(&val->data->list->cell[i], &val->data->list->cell[i+1], sizeof(zval*) * (ZVAL_COUNT(val) - i - 1));
 
 	// decreasing the count of items in the list
-	val->data->list->count--;
+	ZVAL_COUNT(val)--;
 
 	// relocating the memory used
-	val->data->list->cell = realloc(val->data->list->cell, sizeof(zval*) * val->data->list->count);
+	val->data->list->cell = realloc(val->data->list->cell, sizeof(zval*) * ZVAL_COUNT(val));
 
 	return x;
 }
@@ -267,7 +270,7 @@ zval* zval_pick(zval* val, int i) {
 zval* zval_join(zval* x, zval* y){
 	
 	// for each cell in 'y' add it to 'x'
-	while( y->data->list->count ) {
+	while( ZVAL_COUNT(y) ) {
 		x = zval_increase(x, zval_pop(y, 0));
 	}
 
@@ -291,7 +294,7 @@ zval* builtin_list(zval* val) {
 
 // builtin function 'eval'
 zval* builtin_eval(zval* node){
-	QFC(node, node->data->list->count != 1, "Function 'eval' received too many arguments !");
+	QFC(node, ZVAL_COUNT(node) != 1, "Function 'eval' received too many arguments !");
 	QFC(node, node->data->list->cell[0]->type != ZVAL_QUOTE, "Function 'eval' received incorrect types !");
 
 	zval* val = zval_pick(node, 0);
@@ -303,15 +306,15 @@ zval* builtin_eval(zval* node){
 zval* builtin_head(zval* node){
 
 	// checking for error conditions
-	QFC(node, node->data->list->count != 1, "Function 'head' received too many arguments !" );
+	QFC(node, ZVAL_COUNT(node) != 1, "Function 'head' received too many arguments !" );
 	QFC(node, node->data->list->cell[0]->type != ZVAL_QUOTE, "Function 'head' received incorrect types !" );
-	QFC(node, node->data->list->cell[0]->data->list->count == 0, "Function 'head' passed [] !" );
+	QFC(node, ZVAL_COUNT(node->data->list->cell[0]) == 0, "Function 'head' passed [] !" );
 
 	// otherwise taking the first argument
 	zval* val = zval_pick(node, 0);
 
 	// delete all the arguments that are not head and return
-	while(val->data->list->count > 1) { zval_delete( zval_pop( val, 1 ) ); }
+	while(ZVAL_COUNT(val) > 1) { zval_delete( zval_pop( val, 1 ) ); }
 	return val;
 
 }
@@ -320,9 +323,9 @@ zval* builtin_head(zval* node){
 zval * builtin_tail(zval* node){
 
 	// checking for error conditions
-	QFC(node, node->data->list->count != 1, "Function 'tail' received too many arguments ! ");
+	QFC(node, ZVAL_COUNT(node) != 1, "Function 'tail' received too many arguments ! ");
 	QFC(node, node->data->list->cell[0]->type != ZVAL_QUOTE, "Function 'tail' received incorrect types ! " );
-	QFC(node, node->data->list->cell[0]->data->list->count == 0, "Function 'tail' passed [] ! ");
+	QFC(node, ZVAL_COUNT(node->data->list->cell[0]) == 0, "Function 'tail' passed [] ! ");
 
 	// otherwise taking the first argument
 	zval* val = zval_pick(node, 0);
@@ -335,13 +338,13 @@ zval * builtin_tail(zval* node){
 
 // builtin function 'join' for quotes
 zval* builtin_join(zval* node) {
-	for(int i = 0; i < node->data->list->count; i++ ){
+	for(int i = 0; i < ZVAL_COUNT(node); i++ ){
 		QFC(node, node->data->list->cell[i]->type != ZVAL_QUOTE, "Function 'join' passed incorrect types !");
 	}
 
 	zval*val = zval_pop(node, 0);
 
-	while(node->data->list->count){ val = zval_join(val, zval_pop(node, 0)); }
+	while(ZVAL_COUNT(node)){ val = zval_join(val, zval_pop(node, 0)); }
 
 	zval_delete(node);
 	return val;
@@ -351,7 +354,7 @@ zval* builtin_join(zval* node) {
 zval* builtin_operators(zval* val, char* o) {
 
 	// first ensuring all arguments are numbers
-	for(int i = 0; i < val->data->list->count; i ++ ){
+	for(int i = 0; i < ZVAL_COUNT(val); i ++ ){
 		if (val->data->list->cell[i]->type != ZVAL_NUMBER ) {
 			zval_delete(val);
 			return zval_error("Cannot operate on a non-number !!");
@@ -362,12 +365,12 @@ zval* builtin_operators(zval* val, char* o) {
 	zval* x = zval_pop(val, 0);
 
 	// if no arguments and a "sub" or a "-" then performing a unary negation
-	if((strcmp(o, "-") == 0 || strcmp(o, "sub") == 0 ) && val->data->list->count == 0) {
+	if((strcmp(o, "-") == 0 || strcmp(o, "sub") == 0 ) && ZVAL_COUNT(val) == 0) {
 		ZVAL_NUM(x) = - ZVAL_NUM(x);
 	}
 
 	// while there are still elements remaining
-	while(val->data->list->count > 0) {
+	while(ZVAL_COUNT(val) > 0) {
 
 		// popping the next element
 		zval *y = zval_pop(val, 0);
@@ -428,20 +431,20 @@ zval* builtin_lookup (zval* node, char* fn){
 zval* zval_evaluate_sym_expression (zval* val) {
 
 	//evalualtion of the children
-	for ( int i = 0; i < val->data->list->count; i++ ){
+	for ( int i = 0; i < ZVAL_COUNT(val); i++ ){
 		val->data->list->cell[i] = zval_evaluate(val->data->list->cell[i]);
 	}
 
 	// checking for errors 
-	for (int i = 0; i < val->data->list->count; i++ ){
+	for (int i = 0; i < ZVAL_COUNT(val); i++ ){
 		if (val->data->list->cell[i]->type == ZVAL_ERROR ) { return zval_pick(val, i); }
 	}
 
 	// if getting an empty expression
-	if (val->data->list->count == 0) { return val; }
+	if (ZVAL_COUNT(val) == 0) { return val; }
 
 	// if getting a single expression
-	if (val->data->list->count == 1) { return zval_pick(val, 0); }
+	if (ZVAL_COUNT(val) == 1) { return zval_pick(val, 0); }
 
 	// ensuring first element is a symbol
 	zval* first_element = zval_pop(val, 0);
