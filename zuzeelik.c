@@ -388,7 +388,7 @@ zval* builtin_operators(zval* val, char* o) {
 			if( x->data->number < y->data->number ) { x->data->number = y->data->number; }
 		}
 		if ( strcmp(o, "min") == 0 ) {
-			if ( y->data->number < y->data->number ) { x->data->number = y->data->number;}
+			if ( y->data->number < x->data->number ) { x->data->number = y->data->number;}
 		}
 		zval_delete(y);
 	}
