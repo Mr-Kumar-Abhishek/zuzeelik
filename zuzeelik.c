@@ -116,10 +116,13 @@ zval* zval_symbol(char* sym){
 	return val;
 }
 
+// defining ZVAL_LIST
+#define ZVAL_LIST(v) v->data->list
+
 // constructing a pointer to new empty symbolic expressions 
 zval* zval_sym_expression(void) {
 	zval* val = zval_create(ZVAL_SYM_EXRESSION);
-	val->data->list = malloc(sizeof(zlist));
+	ZVAL_LIST(val) = malloc(sizeof(zlist));
 	val->data->list->count = 0;
 	val->data->list->cell = NULL;
 	return val;
@@ -128,7 +131,7 @@ zval* zval_sym_expression(void) {
 // constructing a pointer to new empty quote
 zval* zval_quote(void) {
 	zval* val = zval_create(ZVAL_QUOTE);
-	val->data->list = malloc(sizeof(zlist));
+	ZVAL_LIST(val) = malloc(sizeof(zlist));
 	val->data->list->count = 0;
 	val->data->list->cell = NULL;
 	return val;
@@ -155,7 +158,7 @@ void zval_delete(zval* val) {
 			free(val->data->list->cell);
 
 			// Also, free the memory contained in zlist.
-			free(val->data->list);
+			free(ZVAL_LIST(val));
 		break;
 	}
 	
