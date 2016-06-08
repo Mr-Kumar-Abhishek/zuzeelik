@@ -188,6 +188,9 @@ zval* zval_read_number(mpc_ast_t* node) {
 	return errno != ERANGE ? zval_number(x) : zval_error( "Invalid number !");
 }
 
+// defining STR_MATCH
+#define STR_MATCH(str1, str2) strcmp(str1, str2) == 0
+
 zval* zval_read(mpc_ast_t* node) {
 	
 	// if symbol or number then returning to that type 
@@ -196,17 +199,17 @@ zval* zval_read(mpc_ast_t* node) {
 
 	// if root (>) or sym-expression then creating a an empty list 
 	zval* x = NULL;
-	if(strcmp(node->tag, ">") == 0 ) { x = zval_sym_expression(); }
+	if(STR_MATCH(node->tag, ">")) { x = zval_sym_expression(); }
 	if(strstr(node->tag, "sym_expression")) { x = zval_sym_expression(); }
 	if(strstr(node->tag, "quote")) { x = zval_quote(); }
 
 	// Filling this list with valid expressions contained within
 	for(int i = 0; i < node->children_num; i ++) {
-		if ( strcmp(node->children[i]->contents, "(") == 0 ) { continue; }
-		if ( strcmp(node->children[i]->contents, ")") == 0 ) { continue; }
-		if ( strcmp(node->children[i]->contents, "[") == 0 ) { continue; }
-		if ( strcmp(node->children[i]->contents, "]") == 0 ) { continue; }
-		if ( strcmp(node->children[i]->tag, "regex") == 0 ) { continue; }
+		if ( STR_MATCH(node->children[i]->contents, "(") ) { continue; }
+		if ( STR_MATCH(node->children[i]->contents, ")") ) { continue; }
+		if ( STR_MATCH(node->children[i]->contents, "[") ) { continue; }
+		if ( STR_MATCH(node->children[i]->contents, "]") ) { continue; }
+		if ( STR_MATCH(node->children[i]->tag, "regex") ) { continue; }
 		x = zval_increase(x, zval_read(node->children[i]));
 	}
 	return x;
@@ -368,7 +371,7 @@ zval* builtin_operators(zval* val, char* o) {
 	zval* x = zval_pop(val, 0);
 
 	// if no arguments and a "sub" or a "-" then performing a unary negation
-	if((strcmp(o, "-") == 0 || strcmp(o, "sub") == 0 ) && ZVAL_COUNT(val) == 0) {
+	if(( STR_MATCH(o, "-") || STR_MATCH(o, "sub") ) && ZVAL_COUNT(val) == 0) {
 		ZVAL_NUM(x) = - ZVAL_NUM(x);
 	}
 
@@ -378,10 +381,10 @@ zval* builtin_operators(zval* val, char* o) {
 		// popping the next element
 		zval *y = zval_pop(val, 0);
 
-		if (strcmp(o, "+") == 0 || strcmp(o, "add") == 0 ) { ZVAL_NUM(x) += ZVAL_NUM(y); }
-		if (strcmp(o, "-") == 0 || strcmp(o, "sub") == 0 ) { ZVAL_NUM(x) -= ZVAL_NUM(y); }
-		if (strcmp(o, "*") == 0 || strcmp(o, "mul") == 0 ) { ZVAL_NUM(x) *= ZVAL_NUM(y); }
-		if (strcmp(o, "/") == 0 || strcmp(o, "div") == 0 ) {
+		if ( STR_MATCH(o, "+") || STR_MATCH(o, "add") ) { ZVAL_NUM(x) += ZVAL_NUM(y); }
+		if ( STR_MATCH(o, "-") || STR_MATCH(o, "sub") ) { ZVAL_NUM(x) -= ZVAL_NUM(y); }
+		if ( STR_MATCH(o, "*") || STR_MATCH(o, "mul") ) { ZVAL_NUM(x) *= ZVAL_NUM(y); }
+		if ( STR_MATCH(o, "/") || STR_MATCH(o, "div") ) {
 
 			// if the second operand is zero then returning an error and breaking out
 			if( ZVAL_NUM(y) == 0 ){
@@ -390,7 +393,7 @@ zval* builtin_operators(zval* val, char* o) {
 			}
 			ZVAL_NUM(x) /= ZVAL_NUM(y); 
 		}
-		if ( strcmp(o, "%") == 0 || strcmp(o, "mod") == 0 ) {
+		if ( STR_MATCH(o, "%") || STR_MATCH(o, "mod") ) {
 
 			// Again, if the second operand is zero then returning an error and breaking out
 			if( ZVAL_NUM(y) == 0 ){
@@ -399,13 +402,13 @@ zval* builtin_operators(zval* val, char* o) {
 			}
 			ZVAL_NUM(x) = fmod(ZVAL_NUM(x), ZVAL_NUM(y));
 		}
-		if ( strcmp(o, "^") == 0 || strcmp(o, "pow") == 0 ) {
+		if ( STR_MATCH(o, "^") || STR_MATCH(o, "pow") ) {
 			ZVAL_NUM(x) = pow(ZVAL_NUM(x), ZVAL_NUM(y)); 
 		}
-		if ( strcmp(o, "max") == 0) { 
+		if ( STR_MATCH(o, "max") ) { 
 			if( ZVAL_NUM(x) < ZVAL_NUM(y) ) { ZVAL_NUM(x) = ZVAL_NUM(y); }
 		}
-		if ( strcmp(o, "min") == 0 ) {
+		if ( STR_MATCH(o, "min") ) {
 			if ( ZVAL_NUM(y) < ZVAL_NUM(x) ) { ZVAL_NUM(x) = ZVAL_NUM(y);}
 		}
 		zval_delete(y);
@@ -415,16 +418,16 @@ zval* builtin_operators(zval* val, char* o) {
 
 // builtin lookup for functions 
 zval* builtin_lookup (zval* node, char* fn){
-	if( strcmp("head", fn) == 0 ) { return builtin_head(node); }
-	if( strcmp("tail", fn) == 0 ) { return builtin_tail(node); }
-	if( strcmp("list", fn) == 0 ) { return builtin_list(node); }
-	if( strcmp("eval", fn) == 0 ) { return builtin_eval(node); }
-	if( strcmp("join", fn) == 0 ) { return builtin_join(node); }
+	if( STR_MATCH("head", fn) ) { return builtin_head(node); }
+	if( STR_MATCH("tail", fn) ) { return builtin_tail(node); }
+	if( STR_MATCH("list", fn) ) { return builtin_list(node); }
+	if( STR_MATCH("eval", fn) ) { return builtin_eval(node); }
+	if( STR_MATCH("join", fn) ) { return builtin_join(node); }
 	if( strstr("+-/*%^", fn) ||
-		strcmp("add", fn) == 0 || strcmp("sub", fn ) == 0 || 
-		strcmp("mul", fn) == 0 || strcmp("div", fn ) == 0 || 
-		strcmp("mod", fn) == 0 || strcmp("pow", fn ) == 0 || 
-		strcmp("min", fn) == 0 || strcmp("max", fn ) == 0 ){
+		STR_MATCH("add", fn) || STR_MATCH("sub", fn ) || 
+		STR_MATCH("mul", fn) || STR_MATCH("div", fn ) || 
+		STR_MATCH("mod", fn) || STR_MATCH("pow", fn ) || 
+		STR_MATCH("min", fn) || STR_MATCH("max", fn ) ){
 			return builtin_operators(node, fn);
 		}
 	zval_delete(node);
