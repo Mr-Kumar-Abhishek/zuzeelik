@@ -94,11 +94,14 @@ zval* zval_number(long double x) {
 	return val;
 }
 
+//defining ZVAL_ERR
+#define ZVAL_ERR(v) v->data->er
+
 // constructing a pointer to a new error type zval 
 zval* zval_error(char* err) {
 	zval* val = zval_create(ZVAL_ERROR);
-	val->data->er = malloc((strlen(err) + 1));
-	strcpy(val->data->er, err);
+	ZVAL_ERR(val) = malloc((strlen(err) + 1));
+	strcpy(ZVAL_ERR(val), err);
 	return val;
 }
 
@@ -135,7 +138,7 @@ void zval_delete(zval* val) {
 		case ZVAL_NUMBER: break;
 
 		// if error or symbol free the string data 
-		case ZVAL_ERROR:  free(val->data->er); break;
+		case ZVAL_ERROR:  free(ZVAL_ERR(val)); break;
 		case ZVAL_SYMBOL: free(val->data->sy); break;
 
 		// if symbolic expression or quote zval then delete all the elements inside 
@@ -219,7 +222,7 @@ void zval_print(zval* val) {
 	switch(val->type) {
 
 		case ZVAL_NUMBER: printf("%Lf", ZVAL_NUM(val)); break;
-		case ZVAL_ERROR: printf("[error]\nError response: %s", val->data->er); break;
+		case ZVAL_ERROR: printf("[error]\nError response: %s", ZVAL_ERR(val)); break;
 		case ZVAL_SYMBOL: printf("%s", val->data->sy); break;
 		case ZVAL_SYM_EXRESSION: zval_expression_print(val, '(', ')'); break;
 		case ZVAL_QUOTE: zval_expression_print(val, '[', ']'); break;
