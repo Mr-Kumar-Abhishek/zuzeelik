@@ -290,7 +290,7 @@ zval* zval_evaluate(zval* val);
 
 // defining QFC ( quote format checker )
 #define QFC(args, cond, err ) \
-	if( cond ) {zval_delete(args); zval_error(err); }
+	if( cond ) {zval_delete(args); return zval_error(err); }
 
 // builtin function 'list'.
 zval* builtin_list(zval* val) {
