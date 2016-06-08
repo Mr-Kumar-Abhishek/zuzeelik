@@ -70,11 +70,17 @@ typedef struct zval {
 	zdata* data;
 } zval;
 
+// defining ZVAL_TYPE
+#define ZVAL_TYPE(v) v->type
+
+// defining ZVAL_DATA
+#define ZVAL_DATA(v) v->data
+
 // constructing a pointer to new zval
 zval* zval_create(int zval_type) {
 	zval* val = malloc(sizeof(zval));
-	val->type = zval_type;
-	val->data = malloc(sizeof(zdata));
+	ZVAL_TYPE(val) = zval_type;
+	ZVAL_DATA(val) = malloc(sizeof(zdata));
 	return val;
 }
 
