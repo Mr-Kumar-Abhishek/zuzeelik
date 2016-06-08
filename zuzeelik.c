@@ -144,7 +144,7 @@ zval* zval_quote(void) {
 }
 
 void zval_delete(zval* val) {
-	switch(val->type){
+	switch(ZVAL_TYPE(val)){
 
 		// do nothing special for number type 
 		case ZVAL_NUMBER: break;
@@ -231,7 +231,7 @@ void zval_expression_print(zval* val, char start, char end) {
 
 // printing a zval 
 void zval_print(zval* val) {
-	switch(val->type) {
+	switch(ZVAL_TYPE(val)) {
 
 		case ZVAL_NUMBER: printf("%Lf", ZVAL_NUM(val)); break;
 		case ZVAL_ERROR: printf("[error]\nError response: %s", ZVAL_ERR(val)); break;
@@ -291,17 +291,17 @@ zval* zval_evaluate(zval* val);
 
 // builtin function 'list'.
 zval* builtin_list(zval* val) {
-	val->type = ZVAL_QUOTE;
+	ZVAL_TYPE(val) = ZVAL_QUOTE;
 	return val;
 }
 
 // builtin function 'eval'
 zval* builtin_eval(zval* node){
 	QFC(node, ZVAL_COUNT(node) != 1, "Function 'eval' received too many arguments !");
-	QFC(node, ZVAL_CELL(node)[0]->type != ZVAL_QUOTE, "Function 'eval' received incorrect types !");
+	QFC(node, ZVAL_TYPE(ZVAL_CELL(node)[0]) != ZVAL_QUOTE, "Function 'eval' received incorrect types !");
 
 	zval* val = zval_pick(node, 0);
-	val->type = ZVAL_SYM_EXRESSION;
+	ZVAL_TYPE(val) = ZVAL_SYM_EXRESSION;
 	return zval_evaluate(val);
 }
 
@@ -310,7 +310,7 @@ zval* builtin_head(zval* node){
 
 	// checking for error conditions
 	QFC(node, ZVAL_COUNT(node) != 1, "Function 'head' received too many arguments !" );
-	QFC(node, ZVAL_CELL(node)[0]->type != ZVAL_QUOTE, "Function 'head' received incorrect types !" );
+	QFC(node, ZVAL_TYPE(ZVAL_CELL(node)[0]) != ZVAL_QUOTE, "Function 'head' received incorrect types !" );
 	QFC(node, ZVAL_COUNT(ZVAL_CELL(node)[0]) == 0, "Function 'head' passed [] !" );
 
 	// otherwise taking the first argument
@@ -327,7 +327,7 @@ zval * builtin_tail(zval* node){
 
 	// checking for error conditions
 	QFC(node, ZVAL_COUNT(node) != 1, "Function 'tail' received too many arguments ! ");
-	QFC(node, ZVAL_CELL(node)[0]->type != ZVAL_QUOTE, "Function 'tail' received incorrect types ! " );
+	QFC(node, ZVAL_TYPE(ZVAL_CELL(node)[0]) != ZVAL_QUOTE, "Function 'tail' received incorrect types ! " );
 	QFC(node, ZVAL_COUNT(ZVAL_CELL(node)[0]) == 0, "Function 'tail' passed [] ! ");
 
 	// otherwise taking the first argument
@@ -342,7 +342,7 @@ zval * builtin_tail(zval* node){
 // builtin function 'join' for quotes
 zval* builtin_join(zval* node) {
 	for(int i = 0; i < ZVAL_COUNT(node); i++ ){
-		QFC(node, ZVAL_CELL(node)[i]->type != ZVAL_QUOTE, "Function 'join' passed incorrect types !");
+		QFC(node, ZVAL_TYPE(ZVAL_CELL(node)[i]) != ZVAL_QUOTE, "Function 'join' passed incorrect types !");
 	}
 
 	zval*val = zval_pop(node, 0);
@@ -358,7 +358,7 @@ zval* builtin_operators(zval* val, char* o) {
 
 	// first ensuring all arguments are numbers
 	for(int i = 0; i < ZVAL_COUNT(val); i ++ ){
-		if (ZVAL_CELL(val)[i]->type != ZVAL_NUMBER ) {
+		if (ZVAL_TYPE(ZVAL_CELL(val)[i]) != ZVAL_NUMBER ) {
 			zval_delete(val);
 			return zval_error("Cannot operate on a non-number !!");
 		}
@@ -440,7 +440,7 @@ zval* zval_evaluate_sym_expression (zval* val) {
 
 	// checking for errors 
 	for (int i = 0; i < ZVAL_COUNT(val); i++ ){
-		if (ZVAL_CELL(val)[i]->type == ZVAL_ERROR ) { return zval_pick(val, i); }
+		if (ZVAL_TYPE(ZVAL_CELL(val)[i]) == ZVAL_ERROR ) { return zval_pick(val, i); }
 	}
 
 	// if getting an empty expression
@@ -451,7 +451,7 @@ zval* zval_evaluate_sym_expression (zval* val) {
 
 	// ensuring first element is a symbol
 	zval* first_element = zval_pop(val, 0);
-	if (first_element->type != ZVAL_SYMBOL ) {
+	if (ZVAL_TYPE(first_element) != ZVAL_SYMBOL ) {
 		zval_delete(first_element); zval_delete(val);
 		return zval_error("sym-expression is not starting with a symbol !!");
 	}
@@ -464,7 +464,7 @@ zval* zval_evaluate_sym_expression (zval* val) {
 zval* zval_evaluate(zval* val) {
 	
 	// evaluating sym-expressions 
-	if ( val->type == ZVAL_SYM_EXRESSION ) { return zval_evaluate_sym_expression(val);}
+	if ( ZVAL_TYPE(val) == ZVAL_SYM_EXRESSION ) { return zval_evaluate_sym_expression(val);}
 
 	// all the other zval types remains the same
 	return val;
