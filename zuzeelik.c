@@ -105,11 +105,14 @@ zval* zval_error(char* err) {
 	return val;
 }
 
+// defining ZVAL_SYM
+#define ZVAL_SYM(v) v->data->sy
+
 // constructing a pointer new symbol type zval 
 zval* zval_symbol(char* sym){
 	zval* val = zval_create(ZVAL_SYMBOL);
-	val->data->sy = malloc(strlen(sym + 1));
-	strcpy(val->data->sy, sym);
+	ZVAL_SYM(val) = malloc(strlen(sym + 1));
+	strcpy(ZVAL_SYM(val), sym);
 	return val;
 }
 
@@ -139,7 +142,7 @@ void zval_delete(zval* val) {
 
 		// if error or symbol free the string data 
 		case ZVAL_ERROR:  free(ZVAL_ERR(val)); break;
-		case ZVAL_SYMBOL: free(val->data->sy); break;
+		case ZVAL_SYMBOL: free(ZVAL_SYM(val)); break;
 
 		// if symbolic expression or quote zval then delete all the elements inside 
 		case ZVAL_QUOTE:
@@ -223,7 +226,7 @@ void zval_print(zval* val) {
 
 		case ZVAL_NUMBER: printf("%Lf", ZVAL_NUM(val)); break;
 		case ZVAL_ERROR: printf("[error]\nError response: %s", ZVAL_ERR(val)); break;
-		case ZVAL_SYMBOL: printf("%s", val->data->sy); break;
+		case ZVAL_SYMBOL: printf("%s", ZVAL_SYM(val)); break;
 		case ZVAL_SYM_EXRESSION: zval_expression_print(val, '(', ')'); break;
 		case ZVAL_QUOTE: zval_expression_print(val, '[', ']'); break;
 	}
@@ -445,7 +448,7 @@ zval* zval_evaluate_sym_expression (zval* val) {
 	}
 
 	// calling builtin lookups
-	zval* r = builtin_lookup(val, first_element->data->sy);
+	zval* r = builtin_lookup(val, ZVAL_SYM(first_element));
 	return r;
 }
 
