@@ -298,9 +298,13 @@ zval* builtin_list(zval* val) {
 	return val;
 }
 
+// defining QAC ( quote argument checker )
+#define QAC(args, cond, fn_err) \
+	QFC(args, ZVAL_COUNT(args) != cond, fn_err);
+
 // builtin function 'eval'
 zval* builtin_eval(zval* node){
-	QFC(node, ZVAL_COUNT(node) != 1, "Function 'eval' received too many arguments !");
+	QAC(node, 1, "Function 'eval' received too many arguments !");
 	QFC(node, ZVAL_TYPE(ZVAL_CELL(node)[0]) != ZVAL_QUOTE, "Function 'eval' received incorrect types !");
 
 	zval* val = zval_pick(node, 0);
@@ -312,7 +316,7 @@ zval* builtin_eval(zval* node){
 zval* builtin_head(zval* node){
 
 	// checking for error conditions
-	QFC(node, ZVAL_COUNT(node) != 1, "Function 'head' received too many arguments !" );
+	QAC(node, 1, "Function 'head' received too many arguments !" );
 	QFC(node, ZVAL_TYPE(ZVAL_CELL(node)[0]) != ZVAL_QUOTE, "Function 'head' received incorrect types !" );
 	QFC(node, ZVAL_COUNT(ZVAL_CELL(node)[0]) == 0, "Function 'head' passed [] !" );
 
@@ -329,7 +333,7 @@ zval* builtin_head(zval* node){
 zval * builtin_tail(zval* node){
 
 	// checking for error conditions
-	QFC(node, ZVAL_COUNT(node) != 1, "Function 'tail' received too many arguments ! ");
+	QAC(node, 1, "Function 'tail' received too many arguments ! ");
 	QFC(node, ZVAL_TYPE(ZVAL_CELL(node)[0]) != ZVAL_QUOTE, "Function 'tail' received incorrect types ! " );
 	QFC(node, ZVAL_COUNT(ZVAL_CELL(node)[0]) == 0, "Function 'tail' passed [] ! ");
 
