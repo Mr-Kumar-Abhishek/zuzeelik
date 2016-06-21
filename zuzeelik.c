@@ -478,10 +478,13 @@ zval* zval_evaluate_sym_expression (zval* val) {
 zval* zval_evaluate(zval* val) {
 	
 	// evaluating sym-expressions 
-	if ( ZVAL_TYPE(val) == ZVAL_SYM_EXRESSION ) { return zval_evaluate_sym_expression(val);}
-
-	// all the other zval types remains the same
-	return val;
+	if ( ZVAL_TYPE(val) == ZVAL_SYM_EXRESSION ) {
+		return zval_evaluate_sym_expression(val);
+	}else {
+		
+		// all the other zval types remains the same
+		return val;
+	}
 }
 
 
