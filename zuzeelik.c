@@ -427,19 +427,20 @@ zval* builtin_operators(zval* val, char* o) {
 // builtin lookup for functions 
 zval* builtin_lookup (zval* node, char* fn){
 	if( STR_MATCH("head", fn) ) { return builtin_head(node); }
-	if( STR_MATCH("tail", fn) ) { return builtin_tail(node); }
-	if( STR_MATCH("list", fn) ) { return builtin_list(node); }
-	if( STR_MATCH("eval", fn) ) { return builtin_eval(node); }
-	if( STR_MATCH("join", fn) ) { return builtin_join(node); }
-	if( strstr("+-/*%^", fn) ||
-		STR_MATCH("add", fn) || STR_MATCH("sub", fn ) || 
-		STR_MATCH("mul", fn) || STR_MATCH("div", fn ) || 
-		STR_MATCH("mod", fn) || STR_MATCH("pow", fn ) || 
-		STR_MATCH("min", fn) || STR_MATCH("max", fn ) ){
-			return builtin_operators(node, fn);
-		}
-	zval_delete(node);
-	return zval_error("Unknown function !!");
+	else if( STR_MATCH("tail", fn) ) { return builtin_tail(node); }
+	else if( STR_MATCH("list", fn) ) { return builtin_list(node); }
+	else if( STR_MATCH("eval", fn) ) { return builtin_eval(node); }
+	else if( STR_MATCH("join", fn) ) { return builtin_join(node); }
+	else if( strstr("+-/*%^", fn) ||
+			 STR_MATCH("add", fn) || STR_MATCH("sub", fn ) || 
+			 STR_MATCH("mul", fn) || STR_MATCH("div", fn ) || 
+			 STR_MATCH("mod", fn) || STR_MATCH("pow", fn ) || 
+			 STR_MATCH("min", fn) || STR_MATCH("max", fn ) ){
+			 		return builtin_operators(node, fn);
+	}else {
+			 zval_delete(node);
+			 return zval_error("Unknown function !!");
+	}
 }
 
 zval* zval_evaluate_sym_expression (zval* val) {
