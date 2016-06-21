@@ -312,13 +312,17 @@ zval* builtin_eval(zval* node){
 	return zval_evaluate(val);
 }
 
+// defining EQC (empty quote checker )
+#define EQC(args, fn_err) \
+	QFC(args, ZVAL_COUNT(ZVAL_CELL(args)[0]) == 0, fn_err);
+
 // builtin function 'head' for quotes
 zval* builtin_head(zval* node){
 
 	// checking for error conditions
 	QAC(node, 1, "Function 'head' received too many arguments !" );
 	QFC(node, ZVAL_TYPE(ZVAL_CELL(node)[0]) != ZVAL_QUOTE, "Function 'head' received incorrect types !" );
-	QFC(node, ZVAL_COUNT(ZVAL_CELL(node)[0]) == 0, "Function 'head' passed [] !" );
+	EQC(node, "Function 'head' passed [] !" );
 
 	// otherwise taking the first argument
 	zval* val = zval_pick(node, 0);
@@ -335,7 +339,7 @@ zval * builtin_tail(zval* node){
 	// checking for error conditions
 	QAC(node, 1, "Function 'tail' received too many arguments ! ");
 	QFC(node, ZVAL_TYPE(ZVAL_CELL(node)[0]) != ZVAL_QUOTE, "Function 'tail' received incorrect types ! " );
-	QFC(node, ZVAL_COUNT(ZVAL_CELL(node)[0]) == 0, "Function 'tail' passed [] ! ");
+	EQC(node, "Function 'tail' passed [] ! ");
 
 	// otherwise taking the first argument
 	zval* val = zval_pick(node, 0);
