@@ -486,14 +486,15 @@ zval* zval_evaluate(zval* val) {
 // count total number of nodes 
 int number_of_nodes(mpc_ast_t* nodes) {
   if (nodes->children_num == 0) { return 1; }
-  if (nodes->children_num >= 1) {
-    int total = 1;
-    for (int i = 0; i < nodes->children_num; i++) {
-      total = total + number_of_nodes(nodes->children[i]);
-    }
-    return total;
-  }
-  return 0;
+  else if (nodes->children_num >= 1) {
+    	int total = 1;
+    	for (int i = 0; i < nodes->children_num; i++) {
+    	  total = total + number_of_nodes(nodes->children[i]);
+    	}
+    	return total;
+  }else { return 0; }
+  // however, number of nodes could never be negative
+  // done to suppress compiler warnings. 
 }
 
 int main(int argc, char** argv) {
