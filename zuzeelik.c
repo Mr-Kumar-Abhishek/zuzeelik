@@ -381,45 +381,47 @@ zval* builtin_operators(zval* val, char* o) {
 	// if no arguments and a "sub" or a "-" then performing a unary negation
 	if(( STR_MATCH(o, "-") || STR_MATCH(o, "sub") ) && ZVAL_COUNT(val) == 0) {
 		ZVAL_NUM(x) = - ZVAL_NUM(x);
-	}
+	}else {
+		// while there are still elements remaining
+		while(ZVAL_COUNT(val) > 0) {
 
-	// while there are still elements remaining
-	while(ZVAL_COUNT(val) > 0) {
+			// popping the next element
+			zval *y = zval_pop(val, 0);
 
-		// popping the next element
-		zval *y = zval_pop(val, 0);
+			if ( STR_MATCH(o, "+") || STR_MATCH(o, "add") ) { ZVAL_NUM(x) += ZVAL_NUM(y); }
+			else if ( STR_MATCH(o, "-") || STR_MATCH(o, "sub") ) { ZVAL_NUM(x) -= ZVAL_NUM(y); }
+			else if ( STR_MATCH(o, "*") || STR_MATCH(o, "mul") ) { ZVAL_NUM(x) *= ZVAL_NUM(y); }
+			else if ( STR_MATCH(o, "/") || STR_MATCH(o, "div") ) {
 
-		if ( STR_MATCH(o, "+") || STR_MATCH(o, "add") ) { ZVAL_NUM(x) += ZVAL_NUM(y); }
-		if ( STR_MATCH(o, "-") || STR_MATCH(o, "sub") ) { ZVAL_NUM(x) -= ZVAL_NUM(y); }
-		if ( STR_MATCH(o, "*") || STR_MATCH(o, "mul") ) { ZVAL_NUM(x) *= ZVAL_NUM(y); }
-		if ( STR_MATCH(o, "/") || STR_MATCH(o, "div") ) {
-
-			// if the second operand is zero then returning an error and breaking out
-			if( ZVAL_NUM(y) == 0 ){
-				zval_delete(x); zval_delete(y);
-				x = zval_error("Division by zero !!??"); break;
+				// if the second operand is zero then returning an error and breaking out
+				if( ZVAL_NUM(y) == 0 ){
+					zval_delete(x); zval_delete(y);
+					x = zval_error("Division by zero !!??"); break;
+				}else {
+					ZVAL_NUM(x) /= ZVAL_NUM(y);
+				}
 			}
-			ZVAL_NUM(x) /= ZVAL_NUM(y); 
-		}
-		if ( STR_MATCH(o, "%") || STR_MATCH(o, "mod") ) {
+			else if ( STR_MATCH(o, "%") || STR_MATCH(o, "mod") ) {
 
-			// Again, if the second operand is zero then returning an error and breaking out
-			if( ZVAL_NUM(y) == 0 ){
-				zval_delete(x); zval_delete(y);
-				x = zval_error("Modulo by zero !! ??"); break;
+				// Again, if the second operand is zero then returning an error and breaking out
+				if( ZVAL_NUM(y) == 0 ){
+					zval_delete(x); zval_delete(y);
+					x = zval_error("Modulo by zero !! ??"); break;
+				}else {
+					ZVAL_NUM(x) = fmod(ZVAL_NUM(x), ZVAL_NUM(y));
+				}
 			}
-			ZVAL_NUM(x) = fmod(ZVAL_NUM(x), ZVAL_NUM(y));
+			else if ( STR_MATCH(o, "^") || STR_MATCH(o, "pow") ) {
+				ZVAL_NUM(x) = pow(ZVAL_NUM(x), ZVAL_NUM(y)); 
+			}
+			else if ( STR_MATCH(o, "max") ) { 
+				if( ZVAL_NUM(x) < ZVAL_NUM(y) ) { ZVAL_NUM(x) = ZVAL_NUM(y); }
+			}
+			else if ( STR_MATCH(o, "min") ) {
+				if ( ZVAL_NUM(y) < ZVAL_NUM(x) ) { ZVAL_NUM(x) = ZVAL_NUM(y);}
+			}
+			zval_delete(y);
 		}
-		if ( STR_MATCH(o, "^") || STR_MATCH(o, "pow") ) {
-			ZVAL_NUM(x) = pow(ZVAL_NUM(x), ZVAL_NUM(y)); 
-		}
-		if ( STR_MATCH(o, "max") ) { 
-			if( ZVAL_NUM(x) < ZVAL_NUM(y) ) { ZVAL_NUM(x) = ZVAL_NUM(y); }
-		}
-		if ( STR_MATCH(o, "min") ) {
-			if ( ZVAL_NUM(y) < ZVAL_NUM(x) ) { ZVAL_NUM(x) = ZVAL_NUM(y);}
-		}
-		zval_delete(y);
 	}
 	zval_delete(val); return x;
 }
