@@ -358,11 +358,23 @@ zval* builtin_join(zval* node) {
 		QFC(node, ZVAL_TYPE(ZVAL_CELL(node)[i]) != ZVAL_QUOTE, "Function 'join' passed incorrect types !");
 	}
 
-	zval*val = zval_pop(node, 0);
+	zval* val = zval_pop(node, 0);
 
 	while(ZVAL_COUNT(node)){ val = zval_join(val, zval_pop(node, 0)); }
 
 	zval_delete(node);
+	return val;
+}
+
+// builtin function 'len' for quotes
+zval* builtin_len(zval* node) {
+	QAC(node, 1, "Function 'len' received too many arguments ! ");
+	QFC(node, ZVAL_TYPE(ZVAL_CELL(node)[0]) != ZVAL_QUOTE, "Function 'len' received incorrect types ! ");
+
+	zval* val = zval_number(ZVAL_COUNT(ZVAL_CELL(node)[0]));
+
+	zval_delete(node);
+	
 	return val;
 }
 
@@ -435,6 +447,7 @@ zval* builtin_lookup (zval* node, char* fn){
 	else if( STR_MATCH("list", fn) ) { return builtin_list(node); }
 	else if( STR_MATCH("eval", fn) ) { return builtin_eval(node); }
 	else if( STR_MATCH("join", fn) ) { return builtin_join(node); }
+	else if( STR_MATCH("len", fn) ) { return builtin_len(node); }
 	else if( strstr("+-/*%^", fn) ||
 			 STR_MATCH("add", fn) || STR_MATCH("sub", fn ) || 
 			 STR_MATCH("mul", fn) || STR_MATCH("div", fn ) || 
@@ -520,7 +533,7 @@ int main(int argc, char** argv) {
 			number 	       : /-?[0-9]+(\\.[0-9]*)?/	;                                                          \
 			symbol         : '+' | '-' | '*' | '/' | '%' | '^' |                                               \
 			                \"add\" | \"sub\" | \"mul\" | \"div\" | \"mod\" | \"max\" | \"min\"  | \"pow\"  |  \
-			                \"head\" | \"tail\" | \"list\" | \"eval\" | \"join\"                            ;  \
+			                \"head\" | \"tail\" | \"list\" | \"eval\" | \"join\" | \"len\"                  ;  \
 			sym_expression : '(' <expression>* ')' ;                                                           \
 			quote          : '[' <expression>* ']' ;                                                           \
 			expression     : <number> | <symbol> | <sym_expression> | <quote> ;                                \
