@@ -335,6 +335,22 @@ zval* builtin_head(zval* node){
 
 }
 
+// builtin function 'init' for quotes
+zval* builtin_init(zval* node) {
+
+	// checking for error conditions
+	QAC(node, 1, "Function 'init' received too many arguments !");
+	QFC(node, ZVAL_TYPE(ZVAL_CELL(node)[0]) != ZVAL_QUOTE, "Function 'init' received incorrect types !");
+	EQC(node, "Function 'init', passed [] !");
+
+	// otherwise taking the first argument
+	zval* val = zval_pick(node, 0);
+
+	// delete the last element and return
+	zval_delete(zval_pop(val, (ZVAL_COUNT(val) - 1) ));
+	return val;
+}
+
 // builtin function 'tail' for quotes
 zval * builtin_tail(zval* node){
 
@@ -447,6 +463,7 @@ zval* builtin_lookup (zval* node, char* fn){
 	else if( STR_MATCH("list", fn) ) { return builtin_list(node); }
 	else if( STR_MATCH("eval", fn) ) { return builtin_eval(node); }
 	else if( STR_MATCH("join", fn) ) { return builtin_join(node); }
+	else if( STR_MATCH("init", fn) ) { return builtin_init(node); }
 	else if( STR_MATCH("len", fn) ) { return builtin_len(node); }
 	else if( strstr("+-/*%^", fn) ||
 			 STR_MATCH("add", fn) || STR_MATCH("sub", fn ) || 
@@ -533,7 +550,7 @@ int main(int argc, char** argv) {
 			number 	       : /-?[0-9]+(\\.[0-9]*)?/	;                                                          \
 			symbol         : '+' | '-' | '*' | '/' | '%' | '^' |                                               \
 			                \"add\" | \"sub\" | \"mul\" | \"div\" | \"mod\" | \"max\" | \"min\"  | \"pow\"  |  \
-			                \"head\" | \"tail\" | \"list\" | \"eval\" | \"join\" | \"len\"                  ;  \
+			                \"head\" | \"tail\" | \"list\" | \"eval\" | \"join\" | \"len\" | \"init\"       ;  \
 			sym_expression : '(' <expression>* ')' ;                                                           \
 			quote          : '[' <expression>* ']' ;                                                           \
 			expression     : <number> | <symbol> | <sym_expression> | <quote> ;                                \
