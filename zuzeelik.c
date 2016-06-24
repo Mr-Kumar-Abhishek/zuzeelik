@@ -263,7 +263,7 @@ zval* zval_pop (zval* val, int i) {
 	// decreasing the count of items in the list
 	ZVAL_COUNT(val)--;
 
-	// relocating the memory used
+	// reallocating the memory used
 	ZVAL_CELL(val) = realloc(ZVAL_CELL(val), sizeof(zval*) * ZVAL_COUNT(val));
 
 	return x;
