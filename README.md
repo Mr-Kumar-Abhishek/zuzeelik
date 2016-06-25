@@ -68,6 +68,8 @@ evaluated which are in *quotes*. *Quotes* comes up with following built-in funct
 |       `tail`      |   `tail [ 343 23 5 343]`       
 |       `join`      |   `join [ 12 23 ] [ 23 43 ]`   
 |       `eval`      |   `eval [ + 34 22 ]`          
+|       `len`       |   `len [ 2 3 24 59  ]`         
+|       `init`      |   `init [ 2 33 4 5 6]`         
 
 ##### Definitions
 
@@ -76,6 +78,8 @@ evaluated which are in *quotes*. *Quotes* comes up with following built-in funct
 * `tail` : *tail* takes a *quote* and returns a *quote* with the first element removed.
 * `join` : *join* takes one or more *quotes* and returns a *quote* of them conjoined together.
 * `eval` : *eval* takes a *quote* and evaluates it as it were a *sym-expression*.
+* `len`  : *len* takes a *quote* and returns the number of elements in it.
+* `init` : *init* takes a *quote* and returns all of the *quote* except the final element.
 
 #### Examples:
 * input: 
