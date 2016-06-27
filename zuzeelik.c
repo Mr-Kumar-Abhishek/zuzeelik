@@ -269,6 +269,23 @@ zval* zval_pop (zval* val, int i) {
 	return x;
 }
 
+zval* zval_push(zval* node, zval* val, int i) {
+
+	// increasing the count of items in the list
+	ZVAL_COUNT(node)++;
+
+	// reallocating the memory to be used
+	ZVAL_CELL(node) = realloc(ZVAL_CELL(node), sizeof(zval*) * ZVAL_COUNT(node));
+
+	// shifting memory at "i" to "i+1"
+	memmove(ZVAL_CELL(&node)[i+1], ZVAL_CELL(&node)[i], sizeof(zval*) * (ZVAL_COUNT(node) -i -1));
+
+	// placing the item at "i"
+	ZVAL_CELL(node)[i] = val;
+
+	return node;
+}
+
 zval* zval_pick(zval* val, int i) {
 	zval* x = zval_pop(val, i);
 	zval_delete(val);
@@ -332,7 +349,21 @@ zval* builtin_head(zval* node){
 	// delete all the arguments that are not head and return
 	while(ZVAL_COUNT(val) > 1) { zval_delete( zval_pop( val, 1 ) ); }
 	return val;
+}
 
+// builtin function 'cons' for quotes
+zval* builtin_cons(zval* node) {
+
+	// checking for error conditions
+	QAC(node, 2, "Function 'cons' received incorrect number of arguments !");
+	QFC(node, ZVAL_TYPE(ZVAL_CELL(node)[1]) != ZVAL_QUOTE, "Function 'cons' received incorrect types in 2nd argument !");
+
+	// otherwise taking the first argument
+	zval* val = zval_pop(node, 0);
+
+	// then pushing the 1st argument into the 2nd argument and returning it
+	zval* x = zval_push(zval_pick(node, 0), val, 0);
+	return x;
 }
 
 // builtin function 'init' for quotes
@@ -349,6 +380,7 @@ zval* builtin_init(zval* node) {
 	// delete the last element and return
 	zval_delete(zval_pop(val, (ZVAL_COUNT(val) - 1) ));
 	return val;
+
 }
 
 // builtin function 'tail' for quotes
@@ -365,7 +397,6 @@ zval * builtin_tail(zval* node){
 	// delete first element and return
 	zval_delete(zval_pop(val, 0));
 	return val;
-
 }
 
 // builtin function 'join' for quotes
@@ -464,6 +495,7 @@ zval* builtin_lookup (zval* node, char* fn){
 	else if( STR_MATCH("eval", fn) ) { return builtin_eval(node); }
 	else if( STR_MATCH("join", fn) ) { return builtin_join(node); }
 	else if( STR_MATCH("init", fn) ) { return builtin_init(node); }
+	else if( STR_MATCH("cons", fn) ) { return builtin_cons(node); }
 	else if( STR_MATCH("len", fn) ) { return builtin_len(node); }
 	else if( strstr("+-/*%^", fn) ||
 			 STR_MATCH("add", fn) || STR_MATCH("sub", fn ) || 
@@ -546,15 +578,15 @@ int main(int argc, char** argv) {
 
 	// defining them with following language 
 	mpca_lang(MPCA_LANG_DEFAULT,
-		"                                                                                                          \
-			number 	       : /-?[0-9]+(\\.[0-9]*)?/	;                                                          \
-			symbol         : '+' | '-' | '*' | '/' | '%' | '^' |                                               \
-			                \"add\" | \"sub\" | \"mul\" | \"div\" | \"mod\" | \"max\" | \"min\"  | \"pow\"  |  \
-			                \"head\" | \"tail\" | \"list\" | \"eval\" | \"join\" | \"len\" | \"init\"       ;  \
-			sym_expression : '(' <expression>* ')' ;                                                           \
-			quote          : '[' <expression>* ']' ;                                                           \
-			expression     : <number> | <symbol> | <sym_expression> | <quote> ;                                \
-			zuzeelik       : /^/ <expression>* /$/ ;                                                           \
+		"                                                                                                           \
+			number 	       : /-?[0-9]+(\\.[0-9]*)?/	;                                                               \
+			symbol         : '+' | '-' | '*' | '/' | '%' | '^' |                                                    \
+			                \"add\" | \"sub\" | \"mul\" | \"div\" | \"mod\" | \"max\" | \"min\"  | \"pow\"  |       \
+			                \"head\" | \"tail\" | \"list\" | \"eval\" | \"join\" | \"len\" | \"init\" | \"cons\" ;  \
+			sym_expression : '(' <expression>* ')' ;                                                                \
+			quote          : '[' <expression>* ']' ;                                                                \
+			expression     : <number> | <symbol> | <sym_expression> | <quote> ;                                     \
+			zuzeelik       : /^/ <expression>* /$/ ;                                                                \
 		",
 	Number, Symbol, Sym_expression, Quote, Expression, Zuzeelik);
 
