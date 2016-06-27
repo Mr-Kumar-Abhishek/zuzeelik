@@ -591,7 +591,7 @@ int main(int argc, char** argv) {
 	Number, Symbol, Sym_expression, Quote, Expression, Zuzeelik);
 
 
-	puts("zuzeelik [ version: v0.0.0-0.5.2 ] \n");
+	puts("zuzeelik [ version: v0.0.0-0.5.3 ] \n");
 	puts("Press Ctrl+C to Exit \n");
 	
 	// Starting REPL 
