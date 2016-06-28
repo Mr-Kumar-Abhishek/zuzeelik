@@ -578,15 +578,13 @@ int main(int argc, char** argv) {
 
 	// defining them with following language 
 	mpca_lang(MPCA_LANG_DEFAULT,
-		"                                                                                                           \
-			number 	       : /-?[0-9]+(\\.[0-9]*)?/	;                                                               \
-			symbol         : '+' | '-' | '*' | '/' | '%' | '^' |                                                    \
-			                \"add\" | \"sub\" | \"mul\" | \"div\" | \"mod\" | \"max\" | \"min\"  | \"pow\"  |       \
-			                \"head\" | \"tail\" | \"list\" | \"eval\" | \"join\" | \"len\" | \"init\" | \"cons\" ;  \
-			sym_expression : '(' <expression>* ')' ;                                                                \
-			quote          : '[' <expression>* ']' ;                                                                \
-			expression     : <number> | <symbol> | <sym_expression> | <quote> ;                                     \
-			zuzeelik       : /^/ <expression>* /$/ ;                                                                \
+		"                                                                       \
+			number 	       : /-?[0-9]+(\\.[0-9]*)?/	;                           \
+			symbol         : /[a-zA-Z0-9_+\\-*\\/\\\\=<>!&^%]+/ ;               \
+			sym_expression : '(' <expression>* ')' ;                            \
+			quote          : '[' <expression>* ']' ;                            \
+			expression     : <number> | <symbol> | <sym_expression> | <quote> ; \
+			zuzeelik       : /^/ <expression>* /$/ ;                            \
 		",
 	Number, Symbol, Sym_expression, Quote, Expression, Zuzeelik);
 
