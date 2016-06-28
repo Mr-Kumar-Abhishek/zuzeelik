@@ -36,22 +36,31 @@
 
 #endif
 
+// forward declarations for structs and unions
+struct zlist;
+union zdata;
+struct zval;
+
+typedef struct zlist zlist;
+typedef union zdata zdata;
+typedef struct zval zval;
+
 // creating enumeration of possible zval types 
 enum { ZVAL_NUMBER, ZVAL_ERROR, ZVAL_SYMBOL, ZVAL_SYM_EXRESSION, ZVAL_QUOTE };
 
 
-// declaring new zlist struct
-typedef struct zlist {
+// declaring zlist struct
+struct zlist {
 	
 	//count to the list "zval*"
 	int count;
 
 	// pointer to the list "zval*" 
 	struct zval** cell;
-} zlist;
+};
 
-// Declaring new zdata union
-typedef union zdata {
+// Declaring zdata union
+union zdata {
 	long double number;
 
 	// error and symbol types has some string data 
@@ -60,15 +69,15 @@ typedef union zdata {
 
 	// zlist struct to hold other zval cells
 	zlist* list;
-} zdata;
+};
 
-// Declaring new zval struct 
-typedef struct zval {
+// Declaring zval struct 
+struct zval {
 	int type;
 
 	// zdata union to hold only one type of data at a time
 	zdata* data;
-} zval;
+};
 
 // defining ZVAL_TYPE
 #define ZVAL_TYPE(v) v->type
