@@ -46,7 +46,7 @@ typedef union zdata zdata;
 typedef struct zval zval;
 
 // creating enumeration of possible zval types 
-enum { ZVAL_NUMBER, ZVAL_ERROR, ZVAL_SYMBOL, ZVAL_SYM_EXRESSION, ZVAL_QUOTE };
+enum { ZVAL_DECIMAL, ZVAL_ERROR, ZVAL_SYMBOL, ZVAL_SYM_EXRESSION, ZVAL_QUOTE };
 
 
 // declaring zlist struct
@@ -61,7 +61,7 @@ struct zlist {
 
 // Declaring zdata union
 union zdata {
-	long double number;
+	long double decimal;
 
 	// error and symbol types has some string data 
 	char* er;
@@ -93,13 +93,13 @@ zval* zval_create(int zval_type) {
 	return val;
 }
 
-// defining ZVAL_NUM
-#define ZVAL_NUM(v) v->data->number
+// defining ZVAL_DEC
+#define ZVAL_DEC(v) v->data->decimal
 
-// constructing a pointer to a new number zval 
-zval* zval_number(long double x) {
-	zval* val = zval_create(ZVAL_NUMBER);
-	ZVAL_NUM(val) = x;
+// constructing a pointer to a new decimal zval 
+zval* zval_decimal(long double x) {
+	zval* val = zval_create(ZVAL_DECIMAL);
+	ZVAL_DEC(val) = x;
 	return val;
 }
 
@@ -157,8 +157,8 @@ zval* zval_quote(void) {
 void zval_delete(zval* val) {
 	switch(ZVAL_TYPE(val)){
 
-		// do nothing special for number type 
-		case ZVAL_NUMBER: break;
+		// do nothing special for decimal type 
+		case ZVAL_DECIMAL: break;
 
 		// if error or symbol free the string data 
 		case ZVAL_ERROR:  free(ZVAL_ERR(val)); break;
@@ -193,10 +193,10 @@ zval* zval_increase(zval* val, zval* x){
 	return val;
 }
 
-zval* zval_read_number(mpc_ast_t* node) {
+zval* zval_read_decimal(mpc_ast_t* node) {
 	errno = 0;
 	long double x = strtold(node->contents, NULL);
-	return errno != ERANGE ? zval_number(x) : zval_error( "Invalid number !");
+	return errno != ERANGE ? zval_decimal(x) : zval_error( "Invalid decimal !");
 }
 
 // defining STR_MATCH
@@ -204,8 +204,8 @@ zval* zval_read_number(mpc_ast_t* node) {
 
 zval* zval_read(mpc_ast_t* node) {
 	
-	// if symbol or number then returning to that type 
-	if (strstr(node->tag, "number")) { return zval_read_number(node); }
+	// if symbol or decimal then returning to that type 
+	if (strstr(node->tag, "decimal")) { return zval_read_decimal(node); }
 	if (strstr(node->tag, "symbol")) { return zval_symbol(node->contents); }
 
 	// if root (>) or sym-expression then creating a an empty list 
@@ -247,7 +247,7 @@ void zval_expression_print(zval* val, char start, char end) {
 void zval_print(zval* val) {
 	switch(ZVAL_TYPE(val)) {
 
-		case ZVAL_NUMBER: printf("%Lf", ZVAL_NUM(val)); break;
+		case ZVAL_DECIMAL: printf("%Lf", ZVAL_DEC(val)); break;
 		case ZVAL_ERROR: printf("[error]\nError response: %s", ZVAL_ERR(val)); break;
 		case ZVAL_SYMBOL: printf("%s", ZVAL_SYM(val)); break;
 		case ZVAL_SYM_EXRESSION: zval_expression_print(val, '(', ')'); break;
@@ -427,7 +427,7 @@ zval* builtin_len(zval* node) {
 	QAC(node, 1, "Function 'len' received too many arguments ! ");
 	QFC(node, ZVAL_TYPE(ZVAL_CELL(node)[0]) != ZVAL_QUOTE, "Function 'len' received incorrect types ! ");
 
-	zval* val = zval_number(ZVAL_COUNT(ZVAL_CELL(node)[0]));
+	zval* val = zval_decimal(ZVAL_COUNT(ZVAL_CELL(node)[0]));
 
 	zval_delete(node);
 	
@@ -437,11 +437,11 @@ zval* builtin_len(zval* node) {
 // using operator string to see which operation to perform
 zval* builtin_operators(zval* val, char* o) {
 
-	// first ensuring all arguments are numbers
+	// first ensuring all arguments are decimals
 	for(int i = 0; i < ZVAL_COUNT(val); i ++ ){
-		if (ZVAL_TYPE(ZVAL_CELL(val)[i]) != ZVAL_NUMBER ) {
+		if (ZVAL_TYPE(ZVAL_CELL(val)[i]) != ZVAL_DECIMAL ) {
 			zval_delete(val);
-			return zval_error("Cannot operate on a non-number !!");
+			return zval_error("Cannot operate on a non-decimal value !!");
 		}
 	}
 
@@ -450,7 +450,7 @@ zval* builtin_operators(zval* val, char* o) {
 
 	// if no arguments and a "sub" or a "-" then performing a unary negation
 	if(( STR_MATCH(o, "-") || STR_MATCH(o, "sub") ) && ZVAL_COUNT(val) == 0) {
-		ZVAL_NUM(x) = - ZVAL_NUM(x);
+		ZVAL_DEC(x) = - ZVAL_DEC(x);
 	}else {
 		// while there are still elements remaining
 		while(ZVAL_COUNT(val) > 0) {
@@ -458,37 +458,37 @@ zval* builtin_operators(zval* val, char* o) {
 			// popping the next element
 			zval *y = zval_pop(val, 0);
 
-			if ( STR_MATCH(o, "+") || STR_MATCH(o, "add") ) { ZVAL_NUM(x) += ZVAL_NUM(y); }
-			else if ( STR_MATCH(o, "-") || STR_MATCH(o, "sub") ) { ZVAL_NUM(x) -= ZVAL_NUM(y); }
-			else if ( STR_MATCH(o, "*") || STR_MATCH(o, "mul") ) { ZVAL_NUM(x) *= ZVAL_NUM(y); }
+			if ( STR_MATCH(o, "+") || STR_MATCH(o, "add") ) { ZVAL_DEC(x) += ZVAL_DEC(y); }
+			else if ( STR_MATCH(o, "-") || STR_MATCH(o, "sub") ) { ZVAL_DEC(x) -= ZVAL_DEC(y); }
+			else if ( STR_MATCH(o, "*") || STR_MATCH(o, "mul") ) { ZVAL_DEC(x) *= ZVAL_DEC(y); }
 			else if ( STR_MATCH(o, "/") || STR_MATCH(o, "div") ) {
 
 				// if the second operand is zero then returning an error and breaking out
-				if( ZVAL_NUM(y) == 0 ){
+				if( ZVAL_DEC(y) == 0 ){
 					zval_delete(x); zval_delete(y);
 					x = zval_error("Division by zero !!??"); break;
 				}else {
-					ZVAL_NUM(x) /= ZVAL_NUM(y);
+					ZVAL_DEC(x) /= ZVAL_DEC(y);
 				}
 			}
 			else if ( STR_MATCH(o, "%") || STR_MATCH(o, "mod") ) {
 
 				// Again, if the second operand is zero then returning an error and breaking out
-				if( ZVAL_NUM(y) == 0 ){
+				if( ZVAL_DEC(y) == 0 ){
 					zval_delete(x); zval_delete(y);
 					x = zval_error("Modulo by zero !! ??"); break;
 				}else {
-					ZVAL_NUM(x) = fmod(ZVAL_NUM(x), ZVAL_NUM(y));
+					ZVAL_DEC(x) = fmod(ZVAL_DEC(x), ZVAL_DEC(y));
 				}
 			}
 			else if ( STR_MATCH(o, "^") || STR_MATCH(o, "pow") ) {
-				ZVAL_NUM(x) = pow(ZVAL_NUM(x), ZVAL_NUM(y)); 
+				ZVAL_DEC(x) = pow(ZVAL_DEC(x), ZVAL_DEC(y)); 
 			}
 			else if ( STR_MATCH(o, "max") ) { 
-				if( ZVAL_NUM(x) < ZVAL_NUM(y) ) { ZVAL_NUM(x) = ZVAL_NUM(y); }
+				if( ZVAL_DEC(x) < ZVAL_DEC(y) ) { ZVAL_DEC(x) = ZVAL_DEC(y); }
 			}
 			else if ( STR_MATCH(o, "min") ) {
-				if ( ZVAL_NUM(y) < ZVAL_NUM(x) ) { ZVAL_NUM(x) = ZVAL_NUM(y);}
+				if ( ZVAL_DEC(y) < ZVAL_DEC(x) ) { ZVAL_DEC(x) = ZVAL_DEC(y);}
 			}
 			zval_delete(y);
 		}
@@ -578,7 +578,7 @@ int number_of_nodes(mpc_ast_t* nodes) {
 int main(int argc, char** argv) {
 
 	// creating some parsers 
-	mpc_parser_t* Number = mpc_new("number");
+	mpc_parser_t* Decimal = mpc_new("decimal");
 	mpc_parser_t* Symbol = mpc_new("symbol");
 	mpc_parser_t* Sym_expression = mpc_new("sym_expression");
 	mpc_parser_t* Quote = mpc_new("quote");
@@ -588,14 +588,14 @@ int main(int argc, char** argv) {
 	// defining them with following language 
 	mpca_lang(MPCA_LANG_DEFAULT,
 		"                                                                       \
-			number 	       : /-?[0-9]+(\\.[0-9]*)?/	;                           \
+			decimal 	       : /-?[0-9]+(\\.[0-9]*)?/	;                       \
 			symbol         : /[a-zA-Z0-9_+\\-*\\/\\\\=<>!&^%]+/ ;               \
 			sym_expression : '(' <expression>* ')' ;                            \
 			quote          : '[' <expression>* ']' ;                            \
-			expression     : <number> | <symbol> | <sym_expression> | <quote> ; \
+			expression     : <decimal> | <symbol> | <sym_expression> | <quote> ; \
 			zuzeelik       : /^/ <expression>* /$/ ;                            \
 		",
-	Number, Symbol, Sym_expression, Quote, Expression, Zuzeelik);
+	Decimal, Symbol, Sym_expression, Quote, Expression, Zuzeelik);
 
 
 	puts("zuzeelik [ version: v0.0.0-0.5.3 ] \n");
@@ -643,6 +643,6 @@ int main(int argc, char** argv) {
 	}
 
 	// undefining and deleting parsers 
-	mpc_cleanup(6, Number, Symbol, Sym_expression, Quote, Expression, Zuzeelik);
+	mpc_cleanup(6, Decimal, Symbol, Sym_expression, Quote, Expression, Zuzeelik);
 	return 0;
 }
