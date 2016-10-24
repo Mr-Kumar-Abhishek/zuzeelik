@@ -129,10 +129,10 @@ zval* zval_symbol(char* sym){
 #define ZVAL_LIST(v) ZVAL_DATA(v)->list
 
 // defining ZVAL_COUNT
-#define ZVAL_COUNT(v) ZVAL_DATA(v)->list->count
+#define ZVAL_COUNT(v) ZVAL_LIST(v)->count
 
 // defining ZVAL_CELL
-#define ZVAL_CELL(v) ZVAL_DATA(v)->list->cell
+#define ZVAL_CELL(v) ZVAL_LIST(v)->cell
 
 // constructing a pointer to new empty zval zlist
 zval* zval_zlist(zval* val){
