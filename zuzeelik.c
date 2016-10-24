@@ -94,7 +94,7 @@ zval* zval_create(int zval_type) {
 }
 
 // defining ZVAL_DEC
-#define ZVAL_DEC(v) v->data->decimal
+#define ZVAL_DEC(v) ZVAL_DATA(v)->decimal
 
 // constructing a pointer to a new decimal zval 
 zval* zval_decimal(long double x) {
@@ -104,7 +104,7 @@ zval* zval_decimal(long double x) {
 }
 
 //defining ZVAL_ERR
-#define ZVAL_ERR(v) v->data->er
+#define ZVAL_ERR(v) ZVAL_DATA(v)->er
 
 // constructing a pointer to a new error type zval 
 zval* zval_error(char* err) {
@@ -115,7 +115,7 @@ zval* zval_error(char* err) {
 }
 
 // defining ZVAL_SYM
-#define ZVAL_SYM(v) v->data->sy
+#define ZVAL_SYM(v) ZVAL_DATA(v)->sy
 
 // constructing a pointer new symbol type zval 
 zval* zval_symbol(char* sym){
@@ -126,13 +126,13 @@ zval* zval_symbol(char* sym){
 }
 
 // defining ZVAL_LIST
-#define ZVAL_LIST(v) v->data->list
+#define ZVAL_LIST(v) ZVAL_DATA(v)->list
 
 // defining ZVAL_COUNT
-#define ZVAL_COUNT(v) v->data->list->count
+#define ZVAL_COUNT(v) ZVAL_DATA(v)->list->count
 
 // defining ZVAL_CELL
-#define ZVAL_CELL(v) v->data->list->cell
+#define ZVAL_CELL(v) ZVAL_DATA(v)->list->cell
 
 // constructing a pointer to new empty zval zlist
 zval* zval_zlist(zval* val){
