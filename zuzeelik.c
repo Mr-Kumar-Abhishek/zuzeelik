@@ -44,6 +44,7 @@ struct zval;
 typedef struct zlist zlist;
 typedef union zdata zdata;
 typedef struct zval zval;
+typedef struct zenv zenv;
 
 // creating enumeration of possible zval types 
 enum { ZVAL_DECIMAL, ZVAL_ERROR, ZVAL_SYMBOL, ZVAL_SYM_EXPRESSION, ZVAL_QUOTE };
