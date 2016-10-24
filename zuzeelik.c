@@ -47,7 +47,7 @@ typedef struct zval zval;
 typedef struct zenv zenv;
 
 // creating enumeration of possible zval types 
-enum { ZVAL_DECIMAL, ZVAL_ERROR, ZVAL_SYMBOL, ZVAL_SYM_EXPRESSION, ZVAL_QUOTE };
+enum { ZVAL_DECIMAL, ZVAL_ERROR, ZVAL_SYMBOL, ZVAL_FUNCTION, ZVAL_SYM_EXPRESSION, ZVAL_QUOTE };
 
 typedef zval* (*zbuiltin) (zenv*, zval*);
 
