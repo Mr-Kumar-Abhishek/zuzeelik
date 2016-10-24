@@ -46,7 +46,7 @@ typedef union zdata zdata;
 typedef struct zval zval;
 
 // creating enumeration of possible zval types 
-enum { ZVAL_DECIMAL, ZVAL_ERROR, ZVAL_SYMBOL, ZVAL_SYM_EXRESSION, ZVAL_QUOTE };
+enum { ZVAL_DECIMAL, ZVAL_ERROR, ZVAL_SYMBOL, ZVAL_SYM_EXPRESSION, ZVAL_QUOTE };
 
 
 // declaring zlist struct
@@ -145,7 +145,7 @@ zval* zval_zlist(zval* val){
 // constructing a pointer to new empty symbolic expressions 
 zval* zval_sym_expression(void) {
 
-	return zval_zlist(zval_create(ZVAL_SYM_EXRESSION));
+	return zval_zlist(zval_create(ZVAL_SYM_EXPRESSION));
 }
 
 // constructing a pointer to new empty quote
@@ -166,7 +166,7 @@ void zval_delete(zval* val) {
 
 		// if symbolic expression or quote zval then delete all the elements inside 
 		case ZVAL_QUOTE:
-		case ZVAL_SYM_EXRESSION: 
+		case ZVAL_SYM_EXPRESSION: 
 			for( int i = 0; i < ZVAL_COUNT(val); i++ ) {
 				zval_delete(ZVAL_CELL(val)[i]);
 			}
@@ -250,7 +250,7 @@ void zval_print(zval* val) {
 		case ZVAL_DECIMAL: printf("%Lf", ZVAL_DEC(val)); break;
 		case ZVAL_ERROR: printf("[error]\nError response: %s", ZVAL_ERR(val)); break;
 		case ZVAL_SYMBOL: printf("%s", ZVAL_SYM(val)); break;
-		case ZVAL_SYM_EXRESSION: zval_expression_print(val, '(', ')'); break;
+		case ZVAL_SYM_EXPRESSION: zval_expression_print(val, '(', ')'); break;
 		case ZVAL_QUOTE: zval_expression_print(val, '[', ']'); break;
 	}
 }
@@ -336,7 +336,7 @@ zval* builtin_eval(zval* node){
 	QFC(node, ZVAL_TYPE(ZVAL_CELL(node)[0]) != ZVAL_QUOTE, "Function 'eval' received incorrect types !");
 
 	zval* val = zval_pick(node, 0);
-	ZVAL_TYPE(val) = ZVAL_SYM_EXRESSION;
+	ZVAL_TYPE(val) = ZVAL_SYM_EXPRESSION;
 	return zval_evaluate(val);
 }
 
@@ -551,7 +551,7 @@ zval* zval_evaluate_sym_expression (zval* val) {
 zval* zval_evaluate(zval* val) {
 	
 	// evaluating sym-expressions 
-	if ( ZVAL_TYPE(val) == ZVAL_SYM_EXRESSION ) {
+	if ( ZVAL_TYPE(val) == ZVAL_SYM_EXPRESSION ) {
 		return zval_evaluate_sym_expression(val);
 	}else {
 		
