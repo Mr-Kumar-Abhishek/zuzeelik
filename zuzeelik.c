@@ -129,6 +129,16 @@ zval* zval_symbol(char* sym){
 	return val;
 }
 
+// defining ZVAL_FUN
+#define ZVAL_FUN(v) ZVAL_DATA(v)->fu
+
+// constructing a pointer to new function type zval
+zval* zval_function(zbuiltin fun){
+	zval* val = zval_create(ZVAL_FUNCTION);
+	ZVAL_FUN(val) = fun;
+	return val;
+}
+
 // defining ZVAL_LIST
 #define ZVAL_LIST(v) ZVAL_DATA(v)->list
 
@@ -177,8 +187,9 @@ zval* zval_quote(void) {
 void zval_delete(zval* val) {
 	switch(ZVAL_TYPE(val)){
 
-		// do nothing special for decimal type 
+		// do nothing special for decimal or function type 
 		case ZVAL_DECIMAL: break;
+		case ZVAL_FUNCTION: break;
 
 		// if error or symbol free the string data 
 		case ZVAL_ERROR:  free(ZVAL_ERR(val)); break;
@@ -268,6 +279,7 @@ void zval_print(zval* val) {
 	switch(ZVAL_TYPE(val)) {
 
 		case ZVAL_DECIMAL: printf("%Lf", ZVAL_DEC(val)); break;
+		case ZVAL_FUNCTION: printf("<function>"); break;
 		case ZVAL_ERROR: printf("[error]\nError response: %s", ZVAL_ERR(val)); break;
 		case ZVAL_SYMBOL: printf("%s", ZVAL_SYM(val)); break;
 		case ZVAL_SYM_EXPRESSION: zval_expression_print(val, '(', ')'); break;
