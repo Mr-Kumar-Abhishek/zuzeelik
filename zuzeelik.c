@@ -69,6 +69,8 @@ union zdata {
 	char* er;
 	char* sy;
 
+	zbuiltin fu;
+
 	// zlist struct to hold other zval cells
 	zlist* list;
 };
