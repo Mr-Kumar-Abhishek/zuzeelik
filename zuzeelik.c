@@ -121,7 +121,7 @@ zval* zval_error(char* err) {
 // defining ZVAL_SYM
 #define ZVAL_SYM(v) ZVAL_DATA(v)->sy
 
-// constructing a pointer new symbol type zval 
+// constructing a pointer to new symbol type zval 
 zval* zval_symbol(char* sym){
 	zval* val = zval_create(ZVAL_SYMBOL);
 	ZVAL_SYM(val) = malloc(strlen(sym + 1));
