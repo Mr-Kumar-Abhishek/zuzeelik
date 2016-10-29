@@ -327,6 +327,15 @@ void zval_println(zval* val){
 	putchar('\n');
 }
 
+
+// zuzeelik environment
+
+struct zenv {
+	int count;
+	char** sym_list;
+	zval** val_list;
+};
+
 zval* zval_pop (zval* val, int i) {
 	
 	// finding the item at i
