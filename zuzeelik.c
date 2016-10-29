@@ -217,6 +217,40 @@ void zval_delete(zval* val) {
 	free(val);
 }
 
+zval* zval_copy(zval* node) {
+
+	zval* val = zval_create(ZVAL_TYPE(node));
+
+	switch(ZVAL_TYPE(val)) {
+
+		// copy decimals and functions directly
+		case ZVAL_DECIMAL: ZVAL_DEC(val) = ZVAL_DEC(node); break;
+		case ZVAL_FUNCTION: ZVAL_FUN(val) = ZVAL_FUN(node); break;
+
+		// copy strings using malloc and strcpy
+		case ZVAL_ERROR: 
+			ZVAL_ERR(val) = malloc(strlen(ZVAL_ERR(node) + 1));
+			strcpy(ZVAL_ERR(val), ZVAL_ERR(node)); break;
+
+		case ZVAL_SYMBOL:
+			ZVAL_SYM(val) = malloc(strlen(ZVAL_SYM(node) + 1));
+			strcpy(ZVAL_SYM(val), ZVAL_SYM(node)); break;
+
+		// copy zlists by copying each sub-expression
+		case ZVAL_QUOTE:
+		case ZVAL_SYM_EXPRESSION:
+
+			val = zval_zlist(val, ZVAL_COUNT(node));
+
+			for (int i = 0; i < ZVAL_COUNT(val); i++) {
+				ZVAL_CELL(val)[i] = zval_copy(ZVAL_CELL(node)[i]);
+			}
+		break;
+	}
+	
+	return val;
+}
+
 zval* zval_increase(zval* val, zval* x){
 	ZVAL_COUNT(val)++;
 	ZVAL_CELL(val) =  realloc(ZVAL_CELL(val), sizeof(zval*) * ZVAL_COUNT(val));
