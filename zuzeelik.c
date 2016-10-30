@@ -370,7 +370,50 @@ void zenv_delete(zenv* env){
 	free(env->val_list);
 	free(env);
 }
+
+zval* zenv_retrieve(zenv* env, zval* val) {
+	
+	// Iterate over all the items in environment
+	for ( int i = 0; i < env->count; i++ ) {
 		
+		/* Check if the stored string matches the symbol string 
+		   If it does, return the copy of the value */	
+		if( STR_MATCH(env->sym_list[i], ZVAL_SYM(val)) ) {
+			return zval_copy(env->val_list[i]);
+		}
+	}
+
+	// If no symbol is found return error
+	return zval_error("Unbound symbol !!");
+}
+
+void zenv_store(zenv* env, zval* sym, zval* val) {
+	
+	/* Iterate over all items in environment
+	   This is to see if variable already exists */
+	for ( int i = 0; i < env->count; i++ ) {
+		
+		/* If the variable is found delete item at that position
+		   And replace with variable supplied by user (zuzeelik programmer) */
+		if( STR_MATCH(env->sym_list[i], ZVAL_SYM(sym)) ) {
+			zval_delete( env->val_list[i] );
+			env->val_list[i] = zval_copy(val);
+			return;
+		}
+	 }
+
+	// If no existing entry found allocate space for new entry 
+	env->count++;
+	env->val_list = realloc( env->val_list, sizeof(zval*) * env->count );
+	env->sym_list = realloc( env->sym_list, sizeof(char*) * env->count );
+
+	// copy contents of zval and symbol string into new location
+	env->val_list[env->count - 1] = zval_copy(val);
+	env->val_list[env->count - 1] = malloc(strlen(ZVAL_SYM(sym)) + 1);
+	strcpy( ZENV_SYM_LIST(env)[ env->count - 1 ], ZVAL_SYM(sym) );
+
+}
+ 
 zval* zval_pop (zval* val, int i) {
 	
 	// finding the item at i
