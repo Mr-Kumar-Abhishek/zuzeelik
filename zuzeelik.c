@@ -336,6 +336,41 @@ struct zenv {
 	zval** val_list;
 };
 
+// defining ZENV_COUNT
+#define ZENV_COUNT(e) e->count
+
+// defining ZENV_SYM_LIST
+#define ZENV_SYM_LIST(e) e->sym_list
+
+// defining ZENV_SYM_LIST
+#define ZENV_VAL_LIST(e) e->val_list
+
+// constructing a pointer to new zenv
+zenv* zenv_create(void) {
+	
+	// initialize struct
+	zenv* env = malloc(sizeof(zenv));
+	ZENV_COUNT(env) = 0;
+	ZENV_SYM_LIST(env) = NULL;
+	ZENV_VAL_LIST(env) = NULL;
+	return env;
+}
+
+void zenv_delete(zenv* env){
+
+	// Iterate over all items in environment deleting them
+	for ( int i = 0; i < ZENV_COUNT(env); i++ ) {
+		free(ZENV_SYM_LIST(env)[i]);
+		zval_delete(ZENV_VAL_LIST(env)[i]);
+	}
+
+	
+	// Free allocated memory for lists
+	free(ZENV_SYM_LIST(env));
+	free(ZENV_VAL_LIST(env));
+	free(env);
+}
+		
 zval* zval_pop (zval* val, int i) {
 	
 	// finding the item at i
