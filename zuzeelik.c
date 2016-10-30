@@ -350,24 +350,24 @@ zenv* zenv_create(void) {
 	
 	// initialize struct
 	zenv* env = malloc(sizeof(zenv));
-	ZENV_COUNT(env) = 0;
-	ZENV_SYM_LIST(env) = NULL;
-	ZENV_VAL_LIST(env) = NULL;
+	env->count = 0;
+	env->sym_list = NULL;
+	env->val_list = NULL;
 	return env;
 }
 
 void zenv_delete(zenv* env){
 
 	// Iterate over all items in environment deleting them
-	for ( int i = 0; i < ZENV_COUNT(env); i++ ) {
-		free(ZENV_SYM_LIST(env)[i]);
-		zval_delete(ZENV_VAL_LIST(env)[i]);
+	for ( int i = 0; i < env->count; i++ ) {
+		free(env->sym_list[i]);
+		zval_delete(env->val_list[i]);
 	}
 
 	
 	// Free allocated memory for lists
-	free(ZENV_SYM_LIST(env));
-	free(ZENV_VAL_LIST(env));
+	free(env->sym_list);
+	free(env->val_list);
 	free(env);
 }
 		
