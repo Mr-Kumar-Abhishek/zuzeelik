@@ -4,7 +4,6 @@
 
 A programming language similar to [Lisp](https://en.wikipedia.org/wiki/Lisp_%28programming_language%29). [LispStrawMen](http://c2.com/cgi/wiki?LispStrawMen), this is not exactly a Lisp Dialect. 
 
-[![Throughput Graph](https://graphs.waffle.io/Mr-Kumar-Abhishek/zuzeelik/throughput.svg)](https://waffle.io/Mr-Kumar-Abhishek/zuzeelik/metrics)
 
 #### Cloning:
 
