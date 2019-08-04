@@ -21,6 +21,13 @@ git submodule update --init
 * **For Linux:**
 Compile using c99. Libraries that are needed to be linked while compilation are *math* library and *editline* library.
 
+For installing editline library, in debian based distro use this command:
+```
+sudo apt install libedit-dev
+```
+
+And for compliation, below command can be used:
+
 ``` 
 cc -std=c99 -Wall zuzeelik.c mpc/mpc.c -ledit -lm -o zuzeelik
 ```
