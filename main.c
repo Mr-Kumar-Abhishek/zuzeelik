@@ -186,7 +186,10 @@ zval* zval_quote(void) {
 
 void zval_delete(zval* val) {
  switch(ZVAL_TYPE(val)){
-
+  
+  // declaration for zval_sym_expression for loop
+  int i;
+  
   // do nothing special for decimal or function type 
   case ZVAL_DECIMAL: break;
   case ZVAL_FUNCTION: break;
@@ -198,7 +201,8 @@ void zval_delete(zval* val) {
   // if symbolic expression or quote zval then delete all the elements inside 
   case ZVAL_QUOTE:
   case ZVAL_SYM_EXPRESSION: 
-   for( int i = 0; i < ZVAL_COUNT(val); i++ ) {
+   
+   for(i = 0; i < ZVAL_COUNT(val); i++ ) {
     zval_delete(ZVAL_CELL(val)[i]);
    }
 
@@ -241,8 +245,9 @@ zval* zval_copy(zval* node) {
   case ZVAL_SYM_EXPRESSION:
 
    val = zval_zlist(val, ZVAL_COUNT(node));
-
-   for (int i = 0; i < ZVAL_COUNT(val); i++) {
+   
+   int i;
+   for ( i = 0; i < ZVAL_COUNT(val); i++) {
     ZVAL_CELL(val)[i] = zval_copy(ZVAL_CELL(node)[i]);
    }
   break;
@@ -280,7 +285,8 @@ zval* zval_read(mpc_ast_t* node) {
  if(strstr(node->tag, "quote")) { x = zval_quote(); }
 
  // Filling this list with valid expressions contained within
- for(int i = 0; i < node->children_num; i ++) {
+ int i;
+ for(i = 0; i < node->children_num; i ++) {
   if ( STR_MATCH(node->children[i]->contents, "(") ) { continue; }
   if ( STR_MATCH(node->children[i]->contents, ")") ) { continue; }
   if ( STR_MATCH(node->children[i]->contents, "[") ) { continue; }
@@ -296,7 +302,9 @@ void zval_print(zval* val);
 
 void zval_expression_print(zval* val, char start, char end) {
  putchar(start);
- for(int i = 0; i < ZVAL_COUNT(val); i ++) {
+ 
+ int i;
+ for(i = 0; i < ZVAL_COUNT(val); i ++) {
   // print the value contained within 
    zval_print(ZVAL_CELL(val)[i]);
 
@@ -359,7 +367,9 @@ zenv* zenv_create(void) {
 void zenv_delete(zenv* env){
 
  // Iterate over all items in environment deleting them
- for ( int i = 0; i < env->count; i++ ) {
+ 
+ int i;
+ for (i = 0; i < env->count; i++ ) {
   free(env->sym_list[i]);
    zval_delete(env->val_list[i]);
   }
@@ -374,7 +384,8 @@ void zenv_delete(zenv* env){
 zval* zenv_retrieve(zenv* env, zval* val) {
 	
  // Iterate over all the items in environment
- for ( int i = 0; i < env->count; i++ ) {
+ int i;
+ for ( i = 0; i < env->count; i++ ) {
 		
   /* Check if the stored string matches the symbol string 
      If it does, return the copy of the value */	
@@ -391,7 +402,9 @@ void zenv_store(zenv* env, zval* sym, zval* val) {
 	
  /* Iterate over all items in environment
     This is to see if variable already exists */
- for ( int i = 0; i < env->count; i++ ) {
+    
+ int i;
+ for ( i = 0; i < env->count; i++ ) {
 		
   /* If the variable is found delete item at that position
     And replace with variable supplied by user (zuzeelik programmer) */
@@ -563,7 +576,8 @@ zval * builtin_tail(zval* node){
 
 // builtin function 'join' for quotes
 zval* builtin_join(zval* node) {
- for(int i = 0; i < ZVAL_COUNT(node); i++ ){
+ int i;
+ for(i = 0; i < ZVAL_COUNT(node); i++ ){
   QFC(node, ZVAL_TYPE(ZVAL_CELL(node)[i]) != ZVAL_QUOTE, "Function 'join' passed incorrect types !");
  }
 
@@ -591,7 +605,8 @@ zval* builtin_len(zval* node) {
 zval* builtin_operators(zval* val, char* o) {
 
  // first ensuring all arguments are decimals
- for(int i = 0; i < ZVAL_COUNT(val); i ++ ){
+ int i;
+ for(i = 0; i < ZVAL_COUNT(val); i ++ ){
   if (ZVAL_TYPE(ZVAL_CELL(val)[i]) != ZVAL_DECIMAL ) {
    zval_delete(val);
    return zval_error("Cannot operate on a non-decimal value !!");
@@ -673,13 +688,17 @@ zval* builtin_lookup (zval* node, char* fn){
 
 zval* zval_evaluate_sym_expression (zval* val) {
 
+ // counter for for loops
+int i;
+
  //evalualtion of the children
- for ( int i = 0; i < ZVAL_COUNT(val); i++ ){
+ for ( i = 0; i < ZVAL_COUNT(val); i++ ){
   ZVAL_CELL(val)[i] = zval_evaluate(ZVAL_CELL(val)[i]);
  }
 
  // checking for errors 
- for (int i = 0; i < ZVAL_COUNT(val); i++ ){
+ 
+ for ( i = 0; i < ZVAL_COUNT(val); i++ ){
   if (ZVAL_TYPE(ZVAL_CELL(val)[i]) == ZVAL_ERROR ) { return zval_pick(val, i); }
  }
 
@@ -719,7 +738,8 @@ int number_of_nodes(mpc_ast_t* nodes) {
  if (nodes->children_num == 0) { return 1; }
   else if (nodes->children_num >= 1) {
    int total = 1;
-   for (int i = 0; i < nodes->children_num; i++) {
+   int i;
+   for (i = 0; i < nodes->children_num; i++) {
     total = total + number_of_nodes(nodes->children[i]);
    }
    return total;
