@@ -287,11 +287,21 @@ zval* zval_read(mpc_ast_t* node) {
  // Filling this list with valid expressions contained within
  int i;
  for(i = 0; i < node->children_num; i ++) {
-  if ( STR_MATCH(node->children[i]->contents, "(") ) { continue; }
-  if ( STR_MATCH(node->children[i]->contents, ")") ) { continue; }
-  if ( STR_MATCH(node->children[i]->contents, "[") ) { continue; }
-  if ( STR_MATCH(node->children[i]->contents, "]") ) { continue; }
-  if ( STR_MATCH(node->children[i]->tag, "regex") ) { continue; }
+  if ( STR_MATCH(node->children[i]->contents, "(") ) {
+   continue; 
+  }
+  if ( STR_MATCH(node->children[i]->contents, ")") ) {
+   continue; 
+  }
+  if ( STR_MATCH(node->children[i]->contents, "[") ) {
+   continue; 
+  }
+  if ( STR_MATCH(node->children[i]->contents, "]") ) {
+   continue; 
+  }
+  if ( STR_MATCH(node->children[i]->tag, "regex") ) {
+   continue; 
+  }
   x = zval_increase(x, zval_read(node->children[i]));
  }
  return x;
@@ -583,7 +593,9 @@ zval* builtin_join(zval* node) {
 
  zval* val = zval_pop(node, 0);
 
- while(ZVAL_COUNT(node)){ val = zval_join(val, zval_pop(node, 0)); }
+ while(ZVAL_COUNT(node)){ 
+  val = zval_join(val, zval_pop(node, 0)); 
+ }
 
  zval_delete(node);
  return val;
@@ -626,15 +638,22 @@ zval* builtin_operators(zval* val, char* o) {
    // popping the next element
    zval *y = zval_pop(val, 0);
 
-   if ( STR_MATCH(o, "+") || STR_MATCH(o, "add") ) { ZVAL_DEC(x) += ZVAL_DEC(y); }
-   else if ( STR_MATCH(o, "-") || STR_MATCH(o, "sub") ) { ZVAL_DEC(x) -= ZVAL_DEC(y); }
-   else if ( STR_MATCH(o, "*") || STR_MATCH(o, "mul") ) { ZVAL_DEC(x) *= ZVAL_DEC(y); }
+   if ( STR_MATCH(o, "+") || STR_MATCH(o, "add") ) { 
+    ZVAL_DEC(x) += ZVAL_DEC(y); 
+   }
+   else if ( STR_MATCH(o, "-") || STR_MATCH(o, "sub") ) { 
+    ZVAL_DEC(x) -= ZVAL_DEC(y); 
+   }
+   else if ( STR_MATCH(o, "*") || STR_MATCH(o, "mul") ) { 
+     ZVAL_DEC(x) *= ZVAL_DEC(y); 
+   }
    else if ( STR_MATCH(o, "/") || STR_MATCH(o, "div") ) {
 
     // if the second operand is zero then returning an error and breaking out
     if( ZVAL_DEC(y) == 0 ){
      zval_delete(x); zval_delete(y);
-     x = zval_error("Division by zero !!??"); break;
+     x = zval_error("Division by zero !!??"); 
+     break;
     }else {
      ZVAL_DEC(x) /= ZVAL_DEC(y);
     }
@@ -644,7 +663,8 @@ zval* builtin_operators(zval* val, char* o) {
     // Again, if the second operand is zero then returning an error and breaking out
     if( ZVAL_DEC(y) == 0 ){
      zval_delete(x); zval_delete(y);
-     x = zval_error("Modulo by zero !! ??"); break;
+     x = zval_error("Modulo by zero !! ??"); 
+     break;
     }else {
      ZVAL_DEC(x) = fmod(ZVAL_DEC(x), ZVAL_DEC(y));
     }
@@ -653,10 +673,14 @@ zval* builtin_operators(zval* val, char* o) {
     ZVAL_DEC(x) = pow(ZVAL_DEC(x), ZVAL_DEC(y)); 
    }
    else if ( STR_MATCH(o, "max") ) { 
-    if( ZVAL_DEC(x) < ZVAL_DEC(y) ) { ZVAL_DEC(x) = ZVAL_DEC(y); }
+    if( ZVAL_DEC(x) < ZVAL_DEC(y) ) { 
+     ZVAL_DEC(x) = ZVAL_DEC(y); 
+    }
    }
    else if ( STR_MATCH(o, "min") ) {
-    if ( ZVAL_DEC(y) < ZVAL_DEC(x) ) { ZVAL_DEC(x) = ZVAL_DEC(y);}
+    if ( ZVAL_DEC(y) < ZVAL_DEC(x) ) { 
+     ZVAL_DEC(x) = ZVAL_DEC(y);
+    }
    }
    zval_delete(y);
   }
@@ -666,19 +690,39 @@ zval* builtin_operators(zval* val, char* o) {
 
 // builtin lookup for functions 
 zval* builtin_lookup (zval* node, char* fn){
- if( STR_MATCH("head", fn) ) { return builtin_head(node); }
- else if( STR_MATCH("tail", fn) ) { return builtin_tail(node); }
- else if( STR_MATCH("list", fn) ) { return builtin_list(node); }
- else if( STR_MATCH("eval", fn) ) { return builtin_eval(node); }
- else if( STR_MATCH("join", fn) ) { return builtin_join(node); }
- else if( STR_MATCH("init", fn) ) { return builtin_init(node); }
- else if( STR_MATCH("cons", fn) ) { return builtin_cons(node); }
- else if( STR_MATCH("len", fn) ) { return builtin_len(node); }
+ if( STR_MATCH("head", fn) ) { 
+   return builtin_head(node); 
+ }
+ else if( STR_MATCH("tail", fn) ) { 
+   return builtin_tail(node); 
+ }
+ else if( STR_MATCH("list", fn) ) {
+  return builtin_list(node); 
+ }
+ else if( STR_MATCH("eval", fn) ) { 
+   return builtin_eval(node); 
+ }
+ else if( STR_MATCH("join", fn) ) { 
+  return builtin_join(node); 
+ }
+ else if( STR_MATCH("init", fn) ) { 
+  return builtin_init(node); 
+}
+ else if( STR_MATCH("cons", fn) ) { 
+  return builtin_cons(node); 
+ }
+ else if( STR_MATCH("len", fn) ) { 
+  return builtin_len(node); 
+ }
  else if( strstr("+-/*%^", fn) ||
-    STR_MATCH("add", fn) || STR_MATCH("sub", fn ) || 
-    STR_MATCH("mul", fn) || STR_MATCH("div", fn ) || 
-    STR_MATCH("mod", fn) || STR_MATCH("pow", fn ) || 
-    STR_MATCH("min", fn) || STR_MATCH("max", fn ) ){
+    STR_MATCH("add", fn) || 
+    STR_MATCH("sub", fn ) || 
+    STR_MATCH("mul", fn) || 
+    STR_MATCH("div", fn ) || 
+    STR_MATCH("mod", fn) || 
+    STR_MATCH("pow", fn ) || 
+    STR_MATCH("min", fn) || 
+    STR_MATCH("max", fn ) ){
       return builtin_operators(node, fn);
  }else {
     zval_delete(node);
@@ -699,19 +743,25 @@ int i;
  // checking for errors 
  
  for ( i = 0; i < ZVAL_COUNT(val); i++ ){
-  if (ZVAL_TYPE(ZVAL_CELL(val)[i]) == ZVAL_ERROR ) { return zval_pick(val, i); }
+  if (ZVAL_TYPE(ZVAL_CELL(val)[i]) == ZVAL_ERROR ) { 
+    return zval_pick(val, i); 
+  }
  }
 
  // if getting an empty expression
- if (ZVAL_COUNT(val) == 0) { return val; }
+ if (ZVAL_COUNT(val) == 0) { 
+   return val; 
+ }
 
  // if getting a single expression
- if (ZVAL_COUNT(val) == 1) { return zval_pick(val, 0); }
+ if (ZVAL_COUNT(val) == 1) { 
+  return zval_pick(val, 0); 
+ }
 
  // ensuring first element is a symbol
  zval* first_element = zval_pop(val, 0);
  if (ZVAL_TYPE(first_element) != ZVAL_SYMBOL ) {
- zval_delete(first_element); zval_delete(val);
+  zval_delete(first_element); zval_delete(val);
   return zval_error("sym-expression is not starting with a symbol !!");
  }
 
