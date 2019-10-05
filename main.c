@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include "mpc/mpc.h"
 
 // if compiling in windows, compiling with these functions 
@@ -35,6 +36,11 @@ void add_history(char* not_used) {}
  #endif
 
 #endif
+
+
+// running state
+
+bool running_state = false;
 
 // forward declarations for structs and unions
 struct zlist;
@@ -688,6 +694,11 @@ zval* builtin_operators(zval* val, char* o) {
  zval_delete(val); return x;
 }
 
+zval* exit_repl(zval* transfer){
+  running_state = false;
+  return transfer;
+}
+
 // builtin lookup for functions 
 zval* builtin_lookup (zval* node, char* fn){
  if( STR_MATCH("head", fn) ) { 
@@ -724,7 +735,10 @@ zval* builtin_lookup (zval* node, char* fn){
     STR_MATCH("min", fn) || 
     STR_MATCH("max", fn ) ){
       return builtin_operators(node, fn);
- }else {
+ }else if( STR_MATCH("exit", fn) ) {
+  return exit_repl(node);
+ }
+ else {
     zval_delete(node);
     return zval_error("Unknown function !!");
  }
@@ -800,6 +814,7 @@ int number_of_nodes(mpc_ast_t* nodes) {
 
 int main(int argc, char** argv) {
 
+
  // creating some parsers 
  mpc_parser_t* Decimal = mpc_new("decimal");
  mpc_parser_t* Symbol = mpc_new("symbol");
@@ -824,8 +839,10 @@ int main(int argc, char** argv) {
  puts("zuzeelik [ version: v0.0.0-0.5.3 ] \n");
  puts("Press Ctrl+C to Exit \n");
 	
- // Starting REPL 
- while(1){
+ // Starting REPL
+
+ running_state = true; 
+ while(running_state == true){
 
    // output from the prompt 
   char* input = readline("zuzeelik> ");
