@@ -46,6 +46,7 @@ bool running_state = false;
 struct zlist;
 union zdata;
 struct zval;
+struct zenv;
 
 typedef struct zlist zlist;
 typedef union zdata zdata;
@@ -496,14 +497,14 @@ zval* zval_join(zval* x, zval* y){
 }
 
 // forward declatation of zval_evaluate() used in zval_evaluate_sym_expression() and builtin_eval()
-zval* zval_evaluate(zval* val);
+zval* zval_evaluate(zenv* env, zval* val);
 
 // defining QFC ( quote format checker )
 #define QFC(args, cond, err ) \
  if( cond ) {zval_delete(args); return zval_error(err); }
 
 // builtin function 'list'.
-zval* builtin_list(zval* val) {
+zval* builtin_list(zenv* env, zval* val) {
  ZVAL_TYPE(val) = ZVAL_QUOTE;
  return val;
 }
@@ -513,13 +514,13 @@ zval* builtin_list(zval* val) {
  QFC(args, ZVAL_COUNT(args) != cond, fn_err);
 
 // builtin function 'eval'
-zval* builtin_eval(zval* node){
+zval* builtin_eval(zenv* env, zval* node){
  QAC(node, 1, "Function 'eval' received too many arguments !");
  QFC(node, ZVAL_TYPE(ZVAL_CELL(node)[0]) != ZVAL_QUOTE, "Function 'eval' received incorrect types !");
 
  zval* val = zval_pick(node, 0);
  ZVAL_TYPE(val) = ZVAL_SYM_EXPRESSION;
- return zval_evaluate(val);
+ return zval_evaluate(env, val);
 }
 
 // defining EQC (empty quote checker )
@@ -527,7 +528,7 @@ zval* builtin_eval(zval* node){
  QFC(args, ZVAL_COUNT(ZVAL_CELL(args)[0]) == 0, fn_err);
 
 // builtin function 'head' for quotes
-zval* builtin_head(zval* node){
+zval* builtin_head(zenv* env, zval* node){
 
  // checking for error conditions
  QAC(node, 1, "Function 'head' received too many arguments !" );
@@ -543,7 +544,7 @@ zval* builtin_head(zval* node){
 }
 
 // builtin function 'cons' for quotes
-zval* builtin_cons(zval* node) {
+zval* builtin_cons(zenv* env, zval* node) {
 
  // checking for error conditions
  QAC(node, 2, "Function 'cons' received incorrect number of arguments !");
@@ -558,7 +559,7 @@ zval* builtin_cons(zval* node) {
 }
 
 // builtin function 'init' for quotes
-zval* builtin_init(zval* node) {
+zval* builtin_init(zenv* env, zval* node) {
 
  // checking for error conditions
  QAC(node, 1, "Function 'init' received too many arguments !");
@@ -575,7 +576,7 @@ zval* builtin_init(zval* node) {
 }
 
 // builtin function 'tail' for quotes
-zval * builtin_tail(zval* node){
+zval * builtin_tail(zenv* env, zval* node){
 
  // checking for error conditions
  QAC(node, 1, "Function 'tail' received too many arguments ! ");
@@ -591,7 +592,7 @@ zval * builtin_tail(zval* node){
 }
 
 // builtin function 'join' for quotes
-zval* builtin_join(zval* node) {
+zval* builtin_join(zenv* env, zval* node) {
  int i;
  for(i = 0; i < ZVAL_COUNT(node); i++ ){
   QFC(node, ZVAL_TYPE(ZVAL_CELL(node)[i]) != ZVAL_QUOTE, "Function 'join' passed incorrect types !");
@@ -608,7 +609,7 @@ zval* builtin_join(zval* node) {
 }
 
 // builtin function 'len' for quotes
-zval* builtin_len(zval* node) {
+zval* builtin_len(zenv* env, zval* node) {
  QAC(node, 1, "Function 'len' received too many arguments ! ");
  QFC(node, ZVAL_TYPE(ZVAL_CELL(node)[0]) != ZVAL_QUOTE, "Function 'len' received incorrect types ! ");
 
@@ -620,7 +621,7 @@ zval* builtin_len(zval* node) {
 }
 
 // using operator string to see which operation to perform
-zval* builtin_operators(zval* val, char* o) {
+zval* builtin_operators(zenv* env, zval* val, char* o) {
 
  // first ensuring all arguments are decimals
  int i;
@@ -699,59 +700,89 @@ zval* exit_repl(zval* transfer){
   return transfer;
 }
 
-// builtin lookup for functions 
-zval* builtin_lookup (zval* node, char* fn){
- if( STR_MATCH("head", fn) ) { 
-   return builtin_head(node); 
- }
- else if( STR_MATCH("tail", fn) ) { 
-   return builtin_tail(node); 
- }
- else if( STR_MATCH("list", fn) ) {
-  return builtin_list(node); 
- }
- else if( STR_MATCH("eval", fn) ) { 
-   return builtin_eval(node); 
- }
- else if( STR_MATCH("join", fn) ) { 
-  return builtin_join(node); 
- }
- else if( STR_MATCH("init", fn) ) { 
-  return builtin_init(node); 
-}
- else if( STR_MATCH("cons", fn) ) { 
-  return builtin_cons(node); 
- }
- else if( STR_MATCH("len", fn) ) { 
-  return builtin_len(node); 
- }
- else if( strstr("+-/*%^", fn) ||
-    STR_MATCH("add", fn) || 
-    STR_MATCH("sub", fn ) || 
-    STR_MATCH("mul", fn) || 
-    STR_MATCH("div", fn ) || 
-    STR_MATCH("mod", fn) || 
-    STR_MATCH("pow", fn ) || 
-    STR_MATCH("min", fn) || 
-    STR_MATCH("max", fn ) ){
-      return builtin_operators(node, fn);
- }else if( STR_MATCH("exit", fn) ) {
-  return exit_repl(node);
- }
- else {
-    zval_delete(node);
-    return zval_error("Unknown function !!");
- }
+zval* builtin_add(zenv* env, zval* val ){
+  return builtin_operators(env, val, "+");
 }
 
-zval* zval_evaluate_sym_expression (zval* val) {
+zval* builtin_sub(zenv* env, zval* val){
+  return builtin_operators(env, val, "-");
+}
+
+zval* builtin_mul(zenv* env, zval* val){
+  return builtin_operators(env, val, "*");
+}
+
+zval* builtin_div(zenv* env, zval* val){
+  return builtin_operators(env, val, "/");
+}
+
+zval* builtin_mod(zenv* env, zval* val){
+  return builtin_operators(env, val, "%");
+}
+
+zval* builtin_pow(zenv* env, zval* val){
+  return builtin_operators(env, val, "^");
+}
+
+zval* builtin_max(zenv* env, zval* val){
+  return builtin_operators(env, val, "max");
+}
+
+zval* builtin_min(zenv* env, zval* val){
+  return builtin_operators(env, val, "min");
+}
+
+void zenv_include_builtin(zenv* env, char* name, zbuiltin func) {
+  zval* sym_name = zval_symbol(name);
+  zval* func_val = zval_function(func);
+  zenv_store(env, sym_name, func_val);
+  zval_delete(sym_name); 
+  zval_delete(func_val);
+
+}
+
+void zenv_include_builtins(zenv* env){
+  
+  // list functions
+  zenv_include_builtin(env, "list", builtin_list);
+  zenv_include_builtin(env, "head", builtin_head);
+  zenv_include_builtin(env, "tail", builtin_tail);
+  zenv_include_builtin(env, "eval", builtin_eval);
+  zenv_include_builtin(env, "join", builtin_join);
+  zenv_include_builtin(env, "init", builtin_init);
+  zenv_include_builtin(env, "cons", builtin_cons);
+  zenv_include_builtin(env, "len", builtin_len);
+
+
+  // Mathematical functions
+  zenv_include_builtin(env, "+", builtin_add);
+  zenv_include_builtin(env, "-", builtin_sub);
+  zenv_include_builtin(env, "*", builtin_mul);
+  zenv_include_builtin(env, "/", builtin_div);
+  zenv_include_builtin(env, "%", builtin_mod);
+  zenv_include_builtin(env, "^", builtin_pow);
+
+  // mathematical "wordy" functions
+  zenv_include_builtin(env, "add", builtin_add);
+  zenv_include_builtin(env, "sub", builtin_sub);
+  zenv_include_builtin(env, "mul", builtin_mul);
+  zenv_include_builtin(env, "div", builtin_div);
+  zenv_include_builtin(env, "mod", builtin_mod);
+  zenv_include_builtin(env, "pow", builtin_pow);
+  zenv_include_builtin(env, "min", builtin_min);
+  zenv_include_builtin(env, "max", builtin_max);
+
+}
+
+
+zval* zval_evaluate_sym_expression (zenv* env, zval* val) {
 
  // counter for for loops
 int i;
 
  //evalualtion of the children
  for ( i = 0; i < ZVAL_COUNT(val); i++ ){
-  ZVAL_CELL(val)[i] = zval_evaluate(ZVAL_CELL(val)[i]);
+  ZVAL_CELL(val)[i] = zval_evaluate(env, ZVAL_CELL(val)[i]);
  }
 
  // checking for errors 
@@ -772,28 +803,34 @@ int i;
   return zval_pick(val, 0); 
  }
 
- // ensuring first element is a symbol
+ // ensuring first element is a function
  zval* first_element = zval_pop(val, 0);
- if (ZVAL_TYPE(first_element) != ZVAL_SYMBOL ) {
+ if (ZVAL_TYPE(first_element) != ZVAL_FUNCTION ) {
   zval_delete(first_element); zval_delete(val);
-  return zval_error("sym-expression is not starting with a symbol !!");
+  return zval_error("sym-expression is not starting with a function !!");
  }
 
- // calling builtin lookups
- zval* r = builtin_lookup(val, ZVAL_SYM(first_element));
+ // if so then calling function to get the result
+ zval* r = ZVAL_FUN(first_element)(env, val);
+ zval_delete(first_element);
+
  return r;
 }
 
-zval* zval_evaluate(zval* val) {
+zval* zval_evaluate(zenv* env, zval* val) {
 	
+ if ( ZVAL_TYPE(val) == ZVAL_SYMBOL ) {
+   zval* x = zenv_retrieve(env, val);
+   zval_delete(val);
+   return x;
+ }
+
  // evaluating sym-expressions 
  if ( ZVAL_TYPE(val) == ZVAL_SYM_EXPRESSION ) {
-   return zval_evaluate_sym_expression(val);
- }else {
-		
+   return zval_evaluate_sym_expression(env, val);
+ }
    // all the other zval types remains the same
   return val;
- }
 }
 
 
@@ -838,7 +875,11 @@ int main(int argc, char** argv) {
 
  puts("zuzeelik [ version: v0.0.0-0.5.3 ] \n");
  puts("Press Ctrl+C to Exit \n");
-	
+
+
+ zenv* env = zenv_create();
+ zenv_include_builtins(env);
+ 
  // Starting REPL
 
  running_state = true; 
@@ -867,7 +908,7 @@ int main(int argc, char** argv) {
 
    // print evaluated answer
    printf("Evaluated output: ");
-   zval* answer = zval_evaluate(zval_read(result.output));
+   zval* answer = zval_evaluate(env, zval_read(result.output));
    zval_println(answer);
    zval_delete(answer);	
    mpc_ast_delete(result.output); 
