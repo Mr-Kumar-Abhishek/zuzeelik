@@ -893,10 +893,10 @@ int main(int argc, char** argv) {
     symbol         : /[a-zA-Z0-9_+\\-*\\/\\\\=<>!&^%]+/ ;               \
     sym_expression : '(' <expression>* ')' ;                            \
     quote          : '[' <expression>* ']' ;                            \
-    expression     : <number> | <decimal> | <symbol> | <sym_expression> | <quote> ; \
+    expression     : <decimal> | <number> | <symbol> | <sym_expression> | <quote> ; \
     zuzeelik       : /^/ <expression>* /$/ ;                            \
    ",
-   Number, Decimal, Symbol, Sym_expression, Quote, Expression, Zuzeelik); // Added Number parser
+   Number, Decimal, Symbol, Sym_expression, Quote, Expression, Zuzeelik); // Reordered expression rule
 
  puts("zuzeelik [ version: v0.0.0-0.5.3 ] \n");
  puts("Press Ctrl+C to Exit \n");
